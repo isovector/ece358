@@ -1,22 +1,14 @@
 #include "Client.h"
 
-#ifdef TCP
-
-// TCP Client Constructor
 Client::Client()
 {
 
 }
 
-#else
-
-// UDP Client Constructor
-Client::Client()
+Client::~Client()
 {
 
 }
-
-#endif
 
 // The client program sends GET commands to the server to
 // retrieve students names based on their group number and id w/in the group
