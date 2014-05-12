@@ -4,7 +4,9 @@ ifneq "$(findstring tcp, $(MAKECMDGOALS))" ""
 TCPFLAG = -DTCP
 endif
 
-CXXFLAGS := ${TCPFLAG} -g -Wall -MMD -std=c++11 
+CXXFLAGS := ${TCPFLAG} -g -Wall -MMD #-std=c++11
+
+EXECS = client server
 
 # Object files
 CLIENT_COMMON_OBJ = Client ClientMain
@@ -13,7 +15,7 @@ UDP_CLIENT_OBJECTS = ${addsuffix .o, UDPClient ${CLIENT_COMMON_OBJ}}
 
 SERVER_COMMON_OBJ = Server ServerMain
 TCP_SERVER_OBJECTS = ${addsuffix .o, TCPServer ${SERVER_COMMON_OBJ}}
-UDP_SERVER_OBJECTS = ${addsuffix .o, TCPClient ${SERVER_COMMON_OBJ}}
+UDP_SERVER_OBJECTS = ${addsuffix .o, UDPServer ${SERVER_COMMON_OBJ}}
 
 # Dependencies
 TCP_CLIENT_DEPENDENCIES = ${TCP_CLIENT_OBJECTS:.o=.d}
