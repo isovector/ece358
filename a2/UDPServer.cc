@@ -1,5 +1,7 @@
 #include "UDPServer.h"
 
+using namespace std;
+
 UDPServer::UDPServer()
 {
 
@@ -10,12 +12,22 @@ UDPServer::~UDPServer()
 
 }
 
-// GET <GROUP ID> <STUDENT ID>: returns the name of the student with id STUDENT ID in the
-// group numbered GROUP ID.
-// In case of an invalid group or student id, the text ERROR <GROUP ID> <STUDENT ID> where
-// <GROUP ID> is replaced by the group number and <STUDENT ID> by the id of the student within
-// the group, is sent back to the client.
-void UDPServer::get( int group_id, int student_id )
+void UDPServer::run()
+{
+
+}
+
+void UDPServer::add_student(int group_id, int student_id, string name)
+{
+
+}
+
+bool UDPServer::handle_msg(int client, const char *reply)
+{
+
+}
+
+void UDPServer::respond(int client, string reply)
 {
 
 }
