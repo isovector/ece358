@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <vector>
 #include <string.h>
+#include "Message.h"
 using namespace std;
 
 
@@ -133,7 +134,9 @@ void TCPServer::run()
   }
 }
 
-bool TCPServer::handle_msg(int client, const char *msg) {
+bool TCPServer::handle_msg(int client, const char *buffer) {
+  Message msg = Message::deserialize(buffer);
+
   return false;
 }
 

@@ -24,7 +24,7 @@ class Server
     	virtual void respond(int client, std::string reply) = 0;
 
     	// Client handling methods
-		void get(int group_id, int student_id);
+      std::string get(int group_id, int student_id);
 		virtual void stop_session() = 0;
 		virtual void stop() = 0;
 

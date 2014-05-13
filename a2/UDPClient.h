@@ -7,6 +7,6 @@ class UDPClient: public Client
 		virtual ~UDPClient();
 
 	private:
-		virtual std::string send_message();
+		virtual std::string send_message(Message msg);
 
 };

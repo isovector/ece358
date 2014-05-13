@@ -19,7 +19,11 @@ Client::~Client()
 // the server to stdout. It prints error responses it receives to stderr.
 void Client::send_get( int group_id, int student_id )
 {
-
+  send_message(Message(
+    Message::GET, 
+    static_cast<uint32_t>(group_id), 
+    static_cast<uint32_t>(student_id)
+  ));
 }
 
 // If the client receives an EOF on stdin, it sends
@@ -30,12 +34,12 @@ void Client::send_get( int group_id, int student_id )
 //  it is communicating with, to terminate gracefully.
 void Client::send_stop_session()
 {
-
+  send_message(Message::STOP_SESSION);
 }
 
 void Client::send_stop()
 {
-
+  send_message(Message::STOP);
 }
 
 void Client::set_host_info( string host_address, int host_port )

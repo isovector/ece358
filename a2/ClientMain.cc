@@ -64,7 +64,7 @@ int main( int argc, char *argv[] )
 		// Check validity of input
 		if ( group_id <= 0 || student_number <= 0 )
 		{
-			cerr << "invalid input: " << group_id
+			cerr << "error: invalid input: " << group_id
 				 << " " << student_number << endl;
 			continue;
 		}

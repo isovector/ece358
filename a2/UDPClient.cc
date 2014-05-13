@@ -11,7 +11,7 @@ UDPClient::~UDPClient()
 
 }
 
-string UDPClient::send_message()
+string UDPClient::send_message(Message msg)
 {
-
+  return "<response goes here>";
 }

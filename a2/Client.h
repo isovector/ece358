@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 
+#include "Message.h"
+
 class Client
 {
 	public:
@@ -17,7 +19,7 @@ class Client
 		void set_host_info(std::string host_address, int host_port);
 
 	protected:
-		virtual std::string send_message() = 0;
+		virtual std::string send_message(Message msg) = 0;
 
 		std::string host_address;
 		int host_port;
