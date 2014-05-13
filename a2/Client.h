@@ -3,6 +3,9 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <poll.h>
 
 #include "Message.h"
 
@@ -10,7 +13,7 @@ class Client
 {
 	public:
 		Client();
-		~Client();
+		virtual ~Client();
 
 		void send_get(int group_id, int student_id);
 		void send_stop_session();
@@ -23,6 +26,4 @@ class Client
 
 		std::string host_address;
 		int host_port;
-
-	private:
 };

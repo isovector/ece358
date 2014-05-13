@@ -8,7 +8,9 @@ class UDPClient: public Client
 
     virtual void set_host_info( std::string host_address, int host_port );
 
-	private:
+	protected:
 		virtual std::string send_message(Message msg);
 
+    int sock_;
+    sockaddr_in addr_;
 };
