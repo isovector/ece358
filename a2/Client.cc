@@ -42,7 +42,3 @@ void Client::send_stop()
   send_message(Message::STOP);
 }
 
-void Client::set_host_info( string host_address, int host_port )
-{
-
-}
