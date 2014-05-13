@@ -1,5 +1,7 @@
 #include "Client.h"
 
+using namespace std;
+
 Client::Client()
 {
 
@@ -27,6 +29,16 @@ void Client::send_get( int group_id, int student_id )
 // If one (any) client sends a STOP command, this causes the server
 //  it is communicating with, to terminate gracefully.
 void Client::send_stop_session()
+{
+
+}
+
+void Client::send_stop()
+{
+
+}
+
+void Client::set_host_info( string host_address, int host_port )
 {
 
 }
