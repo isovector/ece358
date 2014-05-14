@@ -9,22 +9,28 @@ using namespace std;
 
 Client::Client()
 {
-  ifaddrs *ifap;
-  getifaddrs(&ifap);
-
   char *ip;
 
-  while (ifap) {
+  // Load up all of the network interfaces
+  ifaddrs *ifap, *ifap_head;
+  getifaddrs(&ifap_head);
+
+  // Necessary to maintain head of linked list so we can delete it later
+  ifap = ifap_head;
+  do {
+    // Loop through them, getting their ip addresses and interface names
     sockaddr_in *sa = (sockaddr_in *) ifap->ifa_addr;
     ip = inet_ntoa(sa->sin_addr);
+
     if (is_good_interface(ifap->ifa_name, ip)) {
+      // If this is an interface we want, let's use it!
       break;
     }
+  } while ((ifap = ifap->ifa_next));
 
-    ifap = ifap->ifa_next;
-  }
-
+  freeifaddrs(ifap_head);
   if (!ifap) {
+    // Failed to get any sick interfaces. Die in a fire.
     cerr << "error: no good interfaces" << endl;
     exit(1);
   }
