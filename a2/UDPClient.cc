@@ -21,8 +21,7 @@ UDPClient::~UDPClient()
 
 string UDPClient::send_message(Message msg)
 {
-  //TODO(sandy): error handling
-  sendto(
+  int result = sendto(
     sock_, 
     msg.serialize(), 
     sizeof(Message), 
@@ -31,11 +30,16 @@ string UDPClient::send_message(Message msg)
     sizeof(sockaddr_in)
   );
 
+  if (result != sizeof(Message)) {
+    cerr << "error: failed to send entire message" << endl;
+    exit(1);
+  }
+
   static const size_t BUFFER_SIZE = 1024;
   char buffer[BUFFER_SIZE];
 
   socklen_t addrLength = sizeof(sockaddr_in);
-  recvfrom(
+  result = recvfrom(
     sock_, 
     buffer, 
     BUFFER_SIZE, 
@@ -44,6 +48,7 @@ string UDPClient::send_message(Message msg)
     &addrLength
   );
 
+  buffer[result] = '\0';
   return buffer;
 }
 

@@ -1,15 +1,52 @@
 #include "Client.h"
-
+#include <cstdlib>
+#include <ifaddrs.h>
+#include <iostream>
+#include <stdint.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 using namespace std;
 
 Client::Client()
 {
+  ifaddrs *ifap;
+  getifaddrs(&ifap);
 
+  char *ip;
+
+  while (ifap) {
+    sockaddr_in *sa = (sockaddr_in *) ifap->ifa_addr;
+    ip = inet_ntoa(sa->sin_addr);
+    if (is_good_interface(ifap->ifa_name, ip)) {
+      break;
+    }
+
+    ifap = ifap->ifa_next;
+  }
+
+  if (!ifap) {
+    cerr << "error: no good interfaces" << endl;
+    exit(1);
+  }
+  else {
+    // TODO(sandy): get rid of this
+    cout << "using " << ip << endl;
+  }
+
+  host_address_ = ip;
 }
 
 Client::~Client()
 {
 
+}
+
+bool Client::is_good_interface(std::string name, std::string ip) {
+  if (name != "wlan0" && name != "eth0") {
+    return false;
+  }
+
+  return ip.substr(0, 3) == "10.";
 }
 
 // The client program sends GET commands to the server to

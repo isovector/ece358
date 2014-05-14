@@ -23,7 +23,8 @@ class Client
 
 	protected:
 		virtual std::string send_message(Message msg) = 0;
+    static bool is_good_interface(std::string name, std::string ip);
 
-		std::string host_address;
-		int host_port;
+		std::string host_address_;
+		int host_port_;
 };
