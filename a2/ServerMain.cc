@@ -22,6 +22,9 @@ int main(void)
 	int group_id;
 	bool group_has_been_set = false;
 
+  server.init();
+  cout << server.get_client_connection_string() << endl;
+
 	string command;
 	while (cin >> command) {
 	  if (command == "Group")

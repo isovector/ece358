@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <vector>
 #include <string.h>
+#include <errno.h>
 #include "Message.h"
 using namespace std;
-
 
 pollfd make_poll(int sock) {
   pollfd result;
@@ -16,8 +16,12 @@ pollfd make_poll(int sock) {
   return result;
 }
 
-void TCPServer::run()
+TCPServer::TCPServer()
+    : Server()
 {
+}
+
+void TCPServer::init() {
   sockaddr_in addr;
   int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -40,7 +44,7 @@ void TCPServer::run()
   int result;
   result = bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
   if (result < 0) {
-    cerr << "error: unable to bind to address " << errno << endl;
+    cerr << "error: unable to bind to address " << endl;
     close(sock);
     exit(1);
   }
@@ -52,14 +56,20 @@ void TCPServer::run()
     exit(1);
   }
 
-  // this is a misnomer since clients[0] is not a client
-  vector<pollfd> clients;
-  clients.push_back(make_poll(sock));
+  // clients_ is a misnomer, since clients_[0] is not a client -- it is the 
+  // listener socket
+  clients_.push_back(make_poll(sock));
+}
+
+void TCPServer::run()
+{
+  int sock = clients_[0].fd;
+  int result;
 
   // 3 minute timeout for polling
   size_t timeout = 3 * 60 * 1000;
   while (true) {
-    result = poll(&clients[0], clients.size(), timeout);
+    result = poll(&clients_[0], clients_.size(), timeout);
     if (result < 0) {
       // poll() failed
       cerr << "error: socket broke" << endl;
@@ -72,9 +82,9 @@ void TCPServer::run()
       exit(1);
     }
 
-    // poll() was successful; loop through the clients to see who
+    // poll() was successful; loop through the clients_ to see who
     // sent us a message.
-    for (auto it = clients.begin(); it != clients.end(); ++it) {
+    for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
       pollfd conn = *it;
 
       if (conn.revents == 0) {
@@ -99,7 +109,7 @@ void TCPServer::run()
           }
 
           // Add this client to our list of people we care about
-          clients.push_back(make_poll(new_client));
+          clients_.push_back(make_poll(new_client));
         }
 
         // Don't attempt to handle receiving logic, since this is the
@@ -127,7 +137,7 @@ void TCPServer::run()
           // handle_msg() returns false if we should close the connection to
           // the requested client
           close(conn.fd);
-          it = clients.erase(it);
+          it = clients_.erase(it);
         }
       }
     }
@@ -136,18 +146,42 @@ void TCPServer::run()
 
 bool TCPServer::handle_msg(int client, const char *buffer) {
   Message msg = Message::deserialize(buffer);
+  switch (msg.command) {
+    case Message::GET:
+      respond(client, get(msg.param1, msg.param2));
+      return true;
 
-  return false;
+    case Message::STOP_SESSION:
+      // We intentionally do not call stop_session() due to iterator woes -
+      // this path actually executes in run()
+      return false;
+
+    case Message::STOP:
+      stop();
+      return true;
+
+    default:
+      cerr << "error: invalid command (corrupted message?)" << endl;
+      return true;
+  }
 }
 
-void TCPServer::respond(int, string) {
+void TCPServer::respond(int client, string response) {
+  send(clients_[client].fd, response.c_str(), response.size(), 0);
 }
 
-void TCPServer::stop_session() {
-  // something else
+void TCPServer::stop_session(int client) {
+  // Intentionally left empty -- see corresponding code in run()
 }
 
 void TCPServer::stop() {
-  // close all connections
+  // Close all connections, including our listener socket
+  for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
+    pollfd conn = *it;
+    close(conn.fd);
+  }
+
+  clients_.clear();
+  exit(0);
 }
 

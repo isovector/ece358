@@ -8,26 +8,34 @@
 
 class Server
 {
-	public:
-		Server() { }
-		virtual ~Server() { }
+  public:
+    Server(); 
+    virtual ~Server();
 
-    	virtual void run() = 0;
-		void add_student(int group_id, int student_id, std::string name);
+    virtual void init() = 0;
+    virtual void run() = 0;
+    void add_student(int group_id, int student_id, std::string name);
 
-	protected:
-		// Initialization
-    	int get_port() const;
+    std::string get_client_connection_string() const;
 
-    	// Message handling methods
-    	virtual bool handle_msg(int client, const char *msg) = 0;
-    	virtual void respond(int client, std::string reply) = 0;
+  protected:
+    // Initialization
+    int get_port() const;
 
-    	// Client handling methods
-      std::string get(int group_id, int student_id);
-		virtual void stop_session() = 0;
-		virtual void stop() = 0;
+    // Message handling methods
+    virtual bool handle_msg(int client, const char *msg) = 0;
+    virtual void respond(int client, std::string reply) = 0;
 
-    	std::map<int, std::map<int, std::string> > groups_;
+    // Client handling methods
+    std::string get(int group_id, int student_id);
+    virtual void stop_session() = 0;
+    virtual void stop() = 0;
+
+    std::map<int, std::map<int, std::string> > groups_;
+    std::string address_;
+    int port_;
+
+  private:
+    static bool is_good_interface(std::string name, std::string ip);
 };
 
