@@ -23,6 +23,17 @@ TCPServer::TCPServer()
 {
 }
 
+TCPServer::~TCPServer()
+{
+  // Close all connections, including our listener socket
+  for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
+    pollfd conn = *it;
+    close(conn.fd);
+  }
+
+  clients_.clear();
+}
+
 void TCPServer::init() {
   sockaddr_in socket_address;
   int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -67,15 +78,6 @@ void TCPServer::init() {
     exit(1);
   }
 
-
-
-  result = listen(sock, 8);
-  if (result == -1) {
-    cerr << "error: unable to listen" << endl;
-    close(sock);
-    exit(1);
-  }
-
   // clients_ is a misnomer, since clients_[0] is not a client -- it is the
   // listener socket
   clients_.push_back(make_poll(sock));
@@ -85,6 +87,12 @@ void TCPServer::run()
 {
   int sock = clients_[0].fd;
   int result;
+
+  result = listen(sock, 8);
+  if (result == -1) {
+    cerr << "error: unable to listen" << endl;
+    exit(1);
+  }
 
   // 3 minute timeout for polling
   size_t timeout = 3 * 60 * 1000;
@@ -195,13 +203,7 @@ void TCPServer::stop_session(int client) {
 }
 
 void TCPServer::stop() {
-  // Close all connections, including our listener socket
-  for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
-    pollfd conn = *it;
-    close(conn.fd);
-  }
-
-  clients_.clear();
+  // The deconstructor will handle cleaning up the sockets for us
   exit(0);
 }
 

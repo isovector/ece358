@@ -7,7 +7,7 @@
 class TCPServer : public Server {
 public:
   TCPServer();
-  virtual ~TCPServer() { }
+  virtual ~TCPServer();
 
   virtual void init();
   virtual void run();
