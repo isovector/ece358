@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include <arpa/inet.h>
 // #include "Message.h"
 
 
@@ -34,12 +36,27 @@ void UDPServer::init()
 	sockaddr_in socket_address;
 	memset( &socket_address, 0, sizeof( socket_address ));
 	socket_address.sin_family = AF_INET;
-	socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-	socket_address.sin_port = htons( get_port() );
+
+	int result;
+	result = inet_pton( AF_INET, address_.c_str(), &socket_address.sin_addr );
+
+	if ( result < 0 )
+	{
+		// Address conversion failed
+		cerr << "error: first parameter is not a valid address family" << endl;
+		close( sock );
+		exit( 1 );
+	}
+	else if ( result == 0 )
+	{
+		// Address conversion failed
+		cerr << "error: second parameter is not a valid IP address" << endl;
+		close( sock );
+		exit( 1 );
+	}
 
 	// Attempt to bind
-	int result;
-	result = bind( sock, (struct sockaddr *)&socket_address, sizeof( socket_address ) );
+	result = get_port_and_bind( sock, &socket_address, sizeof( socket_address ) );
 
 	if ( result == -1 )
 	{
@@ -49,6 +66,7 @@ void UDPServer::init()
 		exit( 1 );
 	}
 
+	cout << "Listening on " << address_ << ":" << port_ << endl;
 }
 
 void UDPServer::run()
@@ -77,7 +95,7 @@ void UDPServer::respond(int client, string reply)
 /*
 	Process an end of session message from a client
 */
-void UDPServer::stop_session()
+void UDPServer::stop_session( int client )
 {
 
 }
