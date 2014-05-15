@@ -6,8 +6,8 @@ class UDPServer: public Server
 		UDPServer();
 		~UDPServer();
 
+		virtual void init();
 		virtual void run();
-		void add_student(int group_id, int student_id, std::string name);
 
 	protected:
 		virtual bool handle_msg(int client, const char *msg);
