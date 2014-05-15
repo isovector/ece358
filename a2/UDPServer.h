@@ -16,7 +16,7 @@ class UDPServer: public Server
 		virtual bool handle_msg(int client, const char *msg);
 		virtual void respond(int client, std::string reply);
 
-		virtual void stop_session();
+		virtual void stop_session( int client );
 		virtual void stop();
 };
 
