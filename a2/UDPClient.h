@@ -1,3 +1,6 @@
+#ifndef UDPClient_H
+#define UDPClient_H
+
 #include "Client.h"
 
 class UDPClient: public Client
@@ -14,3 +17,5 @@ class UDPClient: public Client
     int sock_;
     sockaddr_in addr_;
 };
+
+#endif

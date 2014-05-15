@@ -1,3 +1,6 @@
+#ifndef CLIENT_H
+#define CLIENT_H
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
@@ -25,3 +28,5 @@ class Client
 		virtual std::string send_message(Message msg) = 0;
 		int host_port_;
 };
+
+#endif

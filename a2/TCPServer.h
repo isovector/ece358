@@ -1,14 +1,17 @@
+#ifndef TCPServer_H
+#define TCPServer_H
+
 #include "Server.h"
 #include <vector>
 
 class TCPServer : public Server {
 public:
-  TCPServer(); 
+  TCPServer();
   virtual ~TCPServer() { }
-  
+
   virtual void init();
   virtual void run();
-    
+
 protected:
   virtual void respond(int client, std::string reply);
   virtual bool handle_msg(int client, const char *msg);
@@ -19,3 +22,4 @@ protected:
   std::vector<pollfd> clients_;
 };
 
+#endif

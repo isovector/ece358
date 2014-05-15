@@ -1,3 +1,6 @@
+#ifndef SERVER_H
+#define SERVER_H
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
@@ -9,7 +12,7 @@
 class Server
 {
   public:
-    Server(); 
+    Server();
     virtual ~Server();
 
     virtual void init() = 0;
@@ -28,7 +31,7 @@ class Server
 
     // Client handling methods
     std::string get(int group_id, int student_id);
-    virtual void stop_session() = 0;
+    virtual void stop_session(int client) = 0;
     virtual void stop() = 0;
 
     std::map<int, std::map<int, std::string> > groups_;
@@ -39,3 +42,4 @@ class Server
     static bool is_good_interface(std::string name, std::string ip);
 };
 
+#endif

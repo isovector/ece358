@@ -1,3 +1,6 @@
+#ifndef UDPServer_H
+#define UDPServer_H
+
 #include "Server.h"
 
 class UDPServer: public Server
@@ -16,3 +19,5 @@ class UDPServer: public Server
 		virtual void stop_session();
 		virtual void stop();
 };
+
+#endif
