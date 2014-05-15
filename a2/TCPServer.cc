@@ -5,6 +5,8 @@
 #include <vector>
 #include <string.h>
 #include <errno.h>
+#include <arpa/inet.h>
+
 #include "Message.h"
 using namespace std;
 
@@ -22,7 +24,7 @@ TCPServer::TCPServer()
 }
 
 void TCPServer::init() {
-  sockaddr_in addr;
+  sockaddr_in socket_address;
   int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
   if (sock == -1) {
@@ -35,18 +37,37 @@ void TCPServer::init() {
   fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 
   // Determine our endpoint for the socket
-  memset(&addr, 0, sizeof(sockaddr_in));
-  addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  memset(&socket_address, 0, sizeof(sockaddr_in));
+  socket_address.sin_family = AF_INET;
+
+  int result;
+  result = inet_pton(AF_INET, address_.c_str(), &socket_address.sin_addr);
+
+  // Check result of conversion
+  if (result < 0)
+  {
+    // Address conversion failed
+    cerr << "error: first parameter is not a valid address family" << endl;
+    close(sock);
+    exit(1);
+  }
+  else if (result == 0)
+  {
+    // Address conversion failed
+    cerr << "error: second parameter is not a valid IP address" << endl;
+    close(sock);
+    exit(1);
+  }
 
   // Bind and listen to the socket
-  int result;
-  result = get_port_and_bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
+  result = get_port_and_bind(sock, &socket_address, sizeof(socket_address));
   if (result < 0) {
     cerr << "error: unable to bind to address " << endl;
     close(sock);
     exit(1);
   }
+
+
 
   result = listen(sock, 8);
   if (result == -1) {
