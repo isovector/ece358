@@ -55,7 +55,7 @@ void TCPServer::init() {
     exit(1);
   }
 
-  // clients_ is a misnomer, since clients_[0] is not a client -- it is the 
+  // clients_ is a misnomer, since clients_[0] is not a client -- it is the
   // listener socket
   clients_.push_back(make_poll(sock));
 }

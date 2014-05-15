@@ -1,3 +1,6 @@
+#ifndef MESSAGE_H
+#define MESSAGE_H
+
 #include <stdint.h>
 
 struct Message {
@@ -24,3 +27,4 @@ struct Message {
   }
 };
 
+#endif
