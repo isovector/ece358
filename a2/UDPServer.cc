@@ -65,8 +65,6 @@ void UDPServer::init()
 		close( sock );
 		exit( 1 );
 	}
-
-	cout << "Listening on " << address_ << ":" << port_ << endl;
 }
 
 void UDPServer::run()
@@ -78,7 +76,7 @@ void UDPServer::run()
 */
 bool UDPServer::handle_msg(int client, const char *reply)
 {
-
+  return true;
 }
 
 /*

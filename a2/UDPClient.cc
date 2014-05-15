@@ -59,7 +59,7 @@ string UDPClient::send_message(Message msg)
 void UDPClient::set_host_info( string host_address, int host_port )
 {
   // Create a UDP socket
-  sock_ = socket(PF_INET, SOCK_DGRAM, 0);
+  sock_ = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
   if (sock_ == -1) {
     cerr << "error: unable to create socket" << endl;
@@ -82,7 +82,7 @@ void UDPClient::set_host_info( string host_address, int host_port )
   // Bind and listen to the socket
   result = bind(sock_, reinterpret_cast<sockaddr*>(&addr_), sizeof(sockaddr_in));
   if (result < 0) {
-    cerr << "error: unable to bind to address" << endl;
+    cerr << "error: unable to bind to address " << errno << endl;
     exit(1);
   }
 }
