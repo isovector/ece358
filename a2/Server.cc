@@ -67,8 +67,43 @@ string Server::get(int group_id, int student_id) {
   return str.str();
 }
 
-int Server::get_port() const {
-  // TODO: figure out how to do this properly
-  return 1337;
+#define	PORT_RANGE_LO	10000
+#define PORT_RANGE_HI	10100
+
+int Server::get_port_and_bind(int sockfd, struct sockaddr_in *addr, size_t size) {
+  if(sockfd < 1) {
+    fprintf(stderr, "get_port_and_bind(): sockfd has invalid value\n");
+    return -1;
+  }
+
+  if(addr == NULL) {
+    fprintf(stderr, "get_port_and_bind(): addr is NULL\n");
+    return -1;
+  }
+
+  if(addr->sin_port != 0) {
+    fprintf(stderr, "get_port_and_bind(): addr->sin_port is non-zero. Perhaps you want bind() instead?\n");
+    return -1;
+  }
+
+  unsigned short p;
+  for(p = PORT_RANGE_LO; p <= PORT_RANGE_HI; p++) {
+    addr->sin_port = htons(p);
+    int b = bind(sockfd, (const struct sockaddr *)addr, size);
+    if(b < 0) {
+      continue;
+    }
+    else {
+      break;
+    }
+  }
+
+  if(p > PORT_RANGE_HI) {
+    fprintf(stderr, "get_port_and_bind(): all bind() attempts failed. No port available...?\n");
+    return -1;
+  }
+
+  port_ = ntohs(addr->sin_port);
+  return 0;
 }
 

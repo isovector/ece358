@@ -37,12 +37,11 @@ void TCPServer::init() {
   // Determine our endpoint for the socket
   memset(&addr, 0, sizeof(sockaddr_in));
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(get_port());
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
   // Bind and listen to the socket
   int result;
-  result = bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
+  result = get_port_and_bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
   if (result < 0) {
     cerr << "error: unable to bind to address " << endl;
     close(sock);

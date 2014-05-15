@@ -19,12 +19,10 @@ class Server
     std::string get_client_connection_string() const;
 
   protected:
-    // Initialization
-    int get_port() const;
-
     // Message handling methods
     virtual bool handle_msg(int client, const char *msg) = 0;
     virtual void respond(int client, std::string reply) = 0;
+    int get_port_and_bind(int sockfd, struct sockaddr_in *addr, size_t size);
 
     // Client handling methods
     std::string get(int group_id, int student_id);
