@@ -66,7 +66,7 @@ string Server::get_client_connection_string() const {
 		bool - is this a usable interface?
 */
 bool Server::is_good_interface(string name, string ip) {
-  if (name != "wlan0" && name != "eth0") {
+  if (name != "wlan0" && name != "eth0" && name != "en0") {
     return false;
   }
 
