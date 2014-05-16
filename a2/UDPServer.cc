@@ -23,52 +23,70 @@ UDPServer::~UDPServer()
 
 void UDPServer::init()
 {
-	int sock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+	sock_ = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
 
-	if ( sock == -1 )
+	if ( sock_ == -1 )
 	{
 		cerr << "error: unable to listen" << endl;
-		close( sock );
+		close( sock_ );
 		exit( 1 );
 	}
 
 	// Init address for binding
-	sockaddr_in socket_address;
-	memset( &socket_address, 0, sizeof( socket_address ));
-	socket_address.sin_family = AF_INET;
+	memset( &socket_address_, 0, sizeof( socket_address_ ));
+	socket_address_.sin_family = AF_INET;
 
 	int result;
-	result = inet_pton( AF_INET, address_.c_str(), &socket_address.sin_addr );
+	result = inet_pton( AF_INET, address_.c_str(), &socket_address_.sin_addr );
 
 	if ( result < 0 )
 	{
 		// Address conversion failed
 		cerr << "error: first parameter is not a valid address family" << endl;
-		close( sock );
+		close( sock_ );
 		exit( 1 );
 	}
 	else if ( result == 0 )
 	{
 		// Address conversion failed
 		cerr << "error: second parameter is not a valid IP address" << endl;
-		close( sock );
+		close( sock_ );
 		exit( 1 );
 	}
 
 	// Attempt to bind
-	result = get_port_and_bind( sock, &socket_address, sizeof( socket_address ) );
+	result = get_port_and_bind( sock_, &socket_address_, sizeof( socket_address_ ) );
 
 	if ( result == -1 )
 	{
 		// Bind failed
 		cerr << "error: unable to bind to address" << endl;
-		close( sock );
+		close( sock_ );
 		exit( 1 );
 	}
 }
 
 void UDPServer::run()
 {
+	char buffer[1024];
+	socklen_t fromLength = sizeof(socket_address_);
+	ssize_t recv_msg_size;
+
+	while ( true )
+	{
+		recv_msg_size = recvfrom( sock_, (void *)buffer, sizeof( buffer ), 0, (struct sockaddr *)&socket_address_, &fromLength );
+
+		if ( recv_msg_size < 0 )
+		{
+			// Message Failure
+			cerr << "error: could not receive message" << endl;
+			exit( 1 );
+		}
+
+		cout << "recv_msg_size: " << recv_msg_size << endl;
+		cout << "datagram: " << buffer << endl;
+
+	}
 }
 
 /*

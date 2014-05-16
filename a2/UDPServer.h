@@ -18,6 +18,10 @@ class UDPServer: public Server
 
 		virtual void stop_session( int client );
 		virtual void stop();
+
+	private:
+		int sock_;
+		sockaddr_in socket_address_;
 };
 
 #endif
