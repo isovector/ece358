@@ -25,7 +25,7 @@ class Client
 		virtual void set_host_info(std::string host_address, int host_port) = 0;
 
 	protected:
-		virtual std::string send_message(Message msg) = 0;
+		virtual char *send_message(Message msg) = 0;
 		int host_port_;
 };
 

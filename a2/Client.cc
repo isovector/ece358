@@ -20,15 +20,18 @@ Client::~Client()
 // the server to stdout. It prints error responses it receives to stderr.
 void Client::send_get( int group_id, int student_id )
 {
-  send_message(Message(
-    Message::GET, 
-    static_cast<uint32_t>(group_id), 
-    static_cast<uint32_t>(student_id)
-  ));
+  cout << "Sending GET message" << endl;
+  char *reply_bytes = send_message( Message(
+                  Message::GET,
+                  static_cast<uint32_t>(group_id),
+                  static_cast<uint32_t>(student_id)
+                 ));
+  Message reply_msg = Message::deserialize( reply_bytes );
+  cout << reply_msg.param1 << " " << reply_msg.param2 << endl;
 }
 
 // If the client receives an EOF on stdin, it sends
-//	a STOP SESSION command to the server, and terminates itself.
+//  a STOP SESSION command to the server, and terminates itself.
 // If the client reads the special string STOP on stdin, it sends
 //  the STOP command to the server, and terminates itself.
 // If one (any) client sends a STOP command, this causes the server
