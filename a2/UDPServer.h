@@ -1,6 +1,8 @@
 #ifndef UDPServer_H
 #define UDPServer_H
 
+#include <vector>
+
 #include "Server.h"
 
 class UDPServer: public Server
@@ -22,6 +24,8 @@ class UDPServer: public Server
 	private:
 		int sock_;
 		sockaddr_in socket_address_;
+
+		std::vector<sockaddr_in> clients_;
 };
 
 #endif
