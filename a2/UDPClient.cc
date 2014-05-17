@@ -5,12 +5,40 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 using namespace std;
 
 UDPClient::UDPClient()
   : sock_(-1)
 {
+  // Create a UDP socket
+  sock_ = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
+  if (sock_ == -1)
+  {
+    cerr << "error: unable to create socket" << endl;
+    exit(1);
+  }
+
+  int result;
+
+  // Determine our endpoint for the socket
+  memset( &addr_, 0, sizeof( sockaddr_in ) );
+  addr_.sin_family = AF_INET;
+  addr_.sin_port = htons( 0 );
+  addr_.sin_addr.s_addr = htonl( INADDR_ANY );
+
+  // Bind and listen to the socket
+  result = bind(sock_, reinterpret_cast<sockaddr*>(&addr_), sizeof(sockaddr_in));
+  if (result < 0)
+  {
+    cerr << "error: unable to bind to address " << errno << endl;
+    exit(1);
+  }
 }
 
 UDPClient::~UDPClient()
@@ -20,19 +48,21 @@ UDPClient::~UDPClient()
   }
 }
 
-string UDPClient::send_message(Message msg)
+char *UDPClient::send_message(Message msg)
 {
+  cout << "Inside send_message" << endl;
   // Send the message to sock_
   int result = sendto(
-    sock_, 
-    msg.serialize(), 
-    sizeof(Message), 
-    0, 
-    reinterpret_cast<sockaddr*>(&addr_), 
+    sock_,
+    msg.serialize(),
+    sizeof(Message),
+    0,
+    reinterpret_cast<sockaddr*>(&host_addr_),
     sizeof(sockaddr_in)
   );
 
-  if (result != sizeof(Message)) {
+  if (result != sizeof(Message))
+  {
     // We didn't send as many bytes as we expected. Die in a fire!
     cerr << "error: failed to send entire message" << endl;
     exit(1);
@@ -44,11 +74,11 @@ string UDPClient::send_message(Message msg)
   // Block until we have received a response
   socklen_t addrLength = sizeof(sockaddr_in);
   result = recvfrom(
-    sock_, 
-    buffer, 
-    BUFFER_SIZE, 
-    0, 
-    reinterpret_cast<sockaddr*>(&addr_), 
+    sock_,
+    buffer,
+    BUFFER_SIZE,
+    0,
+    reinterpret_cast<sockaddr*>(&host_addr_),
     &addrLength
   );
 
@@ -58,32 +88,29 @@ string UDPClient::send_message(Message msg)
 
 void UDPClient::set_host_info( string host_address, int host_port )
 {
-  // Create a UDP socket
-  sock_ = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-
-  if (sock_ == -1) {
-    cerr << "error: unable to create socket" << endl;
-    exit(1);
-  }
+  // Determine our endpoint for the socket
+  memset( &host_addr_, 0, sizeof( sockaddr_in ) );
+  host_addr_.sin_family = AF_INET;
+  host_addr_.sin_port = htons( host_port );
 
   int result;
+  result = inet_pton( AF_INET, host_address.c_str(), &host_addr_.sin_addr );
 
-  // Determine our endpoint for the socket
-  memset(&addr_, 0, sizeof(sockaddr_in));
-  addr_.sin_family = AF_INET;
-  addr_.sin_port = htons(host_port);
-  result = inet_pton(AF_INET, host_address.c_str(), &addr_.sin_addr.s_addr);
-  if (result == 0) {
-    // inet_pton returns 0 for failed hostname
-    cerr << "error: bad host_address given: " << host_address << endl;
-    exit(1);
+  if ( result < 0 )
+  {
+    cerr << "error: first parameter is not a valid address family" << endl;
+    close( sock_ );
+    exit( 1 );
+  }
+  else if ( result == 0 )
+  {
+    cerr << "error: second paramter is not a valid IP address";
+    close( sock_ );
+    exit( 1 );
   }
 
-  // Bind and listen to the socket
-  result = bind(sock_, reinterpret_cast<sockaddr*>(&addr_), sizeof(sockaddr_in));
-  if (result < 0) {
-    cerr << "error: unable to bind to address " << errno << endl;
-    exit(1);
-  }
+  cout << "host_address: " << host_address << endl;
+  cout << "host_address: " << host_address << endl;
+
 }
 

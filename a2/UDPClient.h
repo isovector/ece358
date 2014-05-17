@@ -12,10 +12,11 @@ class UDPClient: public Client
     virtual void set_host_info( std::string host_address, int host_port );
 
 	protected:
-		virtual std::string send_message(Message msg);
+		virtual char *send_message(Message msg);
 
     int sock_;
     sockaddr_in addr_;
+    sockaddr_in host_addr_;
 };
 
 #endif
