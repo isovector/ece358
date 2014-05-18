@@ -5,7 +5,7 @@
 #include <sstream>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <linux/if.h>
+#include <net/if.h>
 using namespace std;
 
 Server::Server() {
