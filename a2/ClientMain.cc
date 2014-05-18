@@ -30,19 +30,21 @@ int main( int argc, char *argv[] )
 	}
 
 	string line;
-	stringstream input;
 	while( getline( cin, line ) )
 	{
 		int group_id,
 			  student_number;
 
+    stringstream input;
 		string command;
     char peekedChar;
+
 		// It reads which group and student ID it should perform a GET
 		//  for by reading from stdin.
+    // input.flush();
 		input.str( line );
 
-    // Peek at input
+    // Peek at input to determine command type
     peekedChar = input.peek();
 
     if ( peekedChar == 'S' )
@@ -61,7 +63,6 @@ int main( int argc, char *argv[] )
         cerr << "error: invalid input" << endl;
         continue;
       }
-
     }
     else if ( peekedChar >= '0' && peekedChar <= '9' )
     {
