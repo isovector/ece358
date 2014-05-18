@@ -4,7 +4,7 @@ ifneq "$(findstring tcp, $(MAKECMDGOALS))" ""
 TCPFLAG = -DTCP
 endif
 
-CXXFLAGS := ${TCPFLAG} -g -Wall -MMD #-std=c++11
+CXXFLAGS := ${TCPFLAG} -g -Wall -MMD
 
 EXECS = client server
 
