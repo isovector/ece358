@@ -2,13 +2,16 @@
 #define CLIENT_H
 
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
-#include <string>
-#include <map>
-#include <vector>
+#include <arpa/inet.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <poll.h>
+
+#include <string>
+#include <map>
+#include <vector>
 
 #include "Message.h"
 
