@@ -19,7 +19,8 @@ class TCPClient : public Client
 
 	private:
 		int sock_;
-		sockaddr_in socket_address_;
+		sockaddr_in addr_;
+		sockaddr_in host_addr_;
 
 };
 

@@ -3,14 +3,28 @@
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
-#include <string.h>
-
 
 using namespace std;
 
 TCPClient::TCPClient()
+  : sock_(-1)
 {
+  sock_ = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
 
+  if ( sock_ == -1 )
+  {
+    cerr << "error: unable to create socket" << endl;
+    exit( 1 );
+  }
+
+  int result;
+  memset( &addr_, 0, sizeof( sockaddr_in ) );
+  addr_.sin_family = AF_INET;
+  // @TODO(Ariel): Determine a usable port number on ecelinux
+  addr_.sin_family = htons( 0 );
+  addr_.sin_addr.s_addr = htonl( INADDR_ANY );
+
+  // Connection to host set in set_host_info
 }
 
 TCPClient::~TCPClient()
@@ -19,51 +33,41 @@ TCPClient::~TCPClient()
 }
 
 /*
-	Initialize socket connection
+  Initialize socket connection
 
 */
 void TCPClient::set_host_info( string host_address, int host_port )
 {
-	host_port_ = host_port;
-	sock_ = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
+  host_port_ = host_port;
 
-	if ( sock_ == -1 )
-	{
-		cerr << "error: unable to create socket" << endl;
-		exit( 1 );
-	}
+  int result;
 
-	// memset( socket_address_, 0, sizeof( socket_address_ ) );
-	// socket_address_.sin_family = AF_INET;
-	// socket_address_.sin_port = htons( host_port_ );
+  memset( &host_addr_, 0, sizeof( host_addr_ ) );
+  host_addr_.sin_family = AF_INET;
+  host_addr_.sin_port = htons( host_port_ );
+  result = inet_pton( AF_INET, host_address.c_str(), &host_addr_.sin_addr );
 
-	// int result;
-	// // Expects an IP address XXX.XXX.XXX.XXX
-	// // Would need to convert a hostname to IP
-	// result = inet_pton( AF_INET, host_address, &socket_address_.sin_addr );
- //    stSockAddr.sin_family = AF_INET;
- //    stSockAddr.sin_port = htons(1100);
- //    Res = inet_pton(AF_INET, "192.168.1.3", &stSockAddr.sin_addr);
+  if ( result < 0 )
+  {
+    cerr << "First parameter is not a valid address family" << endl;
+    close( sock_ );
+    exit( 1 );
+  }
+  else if ( result == 0 )
+  {
+    cerr << "Second paramter is not a valid IP address" << endl;
+    close( sock_ );
+    exit( 1 );
+  }
 
- //    if (0 > Res)
- //    {
- //      perror("error: first parameter is not a valid address family");
- //      close(SocketFD);
- //      exit(EXIT_FAILURE);
- //    }
- //    else if (0 == Res)
- //    {
- //      perror("char string (second parameter does not contain valid ipaddress)");
- //      close(SocketFD);
- //      exit(EXIT_FAILURE);
- //    }
+  result = connect( sock_, (struct sockaddr *)&host_addr_, sizeof( host_addr_ ) );
 
- //    if (-1 == connect(SocketFD, (struct sockaddr *)&stSockAddr, sizeof(stSockAddr)))
- //    {
- //      perror("connect failed");
- //      close(SocketFD);
- //      exit(EXIT_FAILURE);
- //    }
+  if ( result == -1 )
+  {
+    cerr << "connection failed" << endl;
+    close( sock_ );
+    exit( 1 );
+  }
 
  //    /* perform read write operations ... */
 
