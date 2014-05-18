@@ -29,6 +29,7 @@ UDPClient::UDPClient()
   // Determine our endpoint for the socket
   memset( &addr_, 0, sizeof( sockaddr_in ) );
   addr_.sin_family = AF_INET;
+  // @TODO(Ariel): Determine a usable port number on ecelinux
   addr_.sin_port = htons( 0 );
   addr_.sin_addr.s_addr = htonl( INADDR_ANY );
 
