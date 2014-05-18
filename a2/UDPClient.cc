@@ -48,9 +48,8 @@ UDPClient::~UDPClient()
   }
 }
 
-char *UDPClient::send_message(Message msg)
+string UDPClient::send_message(Message msg)
 {
-  cout << "Inside send_message" << endl;
   // Send the message to sock_
   int result = sendto(
     sock_,
@@ -93,24 +92,17 @@ void UDPClient::set_host_info( string host_address, int host_port )
   host_addr_.sin_family = AF_INET;
   host_addr_.sin_port = htons( host_port );
 
-  int result;
-  result = inet_pton( AF_INET, host_address.c_str(), &host_addr_.sin_addr );
+  int result = inet_pton( AF_INET, host_address.c_str(), &host_addr_.sin_addr );
 
   if ( result < 0 )
   {
     cerr << "error: first parameter is not a valid address family" << endl;
-    close( sock_ );
     exit( 1 );
   }
   else if ( result == 0 )
   {
     cerr << "error: second paramter is not a valid IP address";
-    close( sock_ );
     exit( 1 );
   }
-
-  cout << "host_address: " << host_address << endl;
-  cout << "host_address: " << host_address << endl;
-
 }
 

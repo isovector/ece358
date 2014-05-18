@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <ifaddrs.h>
 
 class Server
 {
@@ -37,7 +38,7 @@ class Server
     int port_;
 
   private:
-    static bool is_good_interface(std::string name, std::string ip);
+    static bool is_good_interface(ifaddrs *ifap);
 };
 
 #endif

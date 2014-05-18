@@ -5,12 +5,10 @@
 #include <sstream>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <ifaddrs.h>
+#include <linux/if.h>
 using namespace std;
 
 Server::Server() {
-  char *ip;
-
   // Load up all of the network interfaces
   ifaddrs *ifap, *ifap_head;
   getifaddrs(&ifap_head);
@@ -20,16 +18,15 @@ Server::Server() {
   do
   {
     // Loop through them, getting their ip addresses and interface names
-    sockaddr_in *sa = (sockaddr_in *) ifap->ifa_addr;
-    ip = inet_ntoa(sa->sin_addr);
 
-    if (is_good_interface(ifap->ifa_name, ip))
+    if (is_good_interface(ifap))
     {
       // If this is an interface we want, let's use it!
       break;
     }
   } while ((ifap = ifap->ifa_next));
 
+  // Destroy our addresses
   freeifaddrs(ifap_head);
   if (!ifap)
   {
@@ -38,7 +35,8 @@ Server::Server() {
     exit(1);
   }
 
-  address_ = ip;
+  sockaddr_in *sa = (sockaddr_in *) ifap->ifa_addr;
+  address_ = inet_ntoa(sa->sin_addr);
 }
 
 Server::~Server()
@@ -49,12 +47,12 @@ Server::~Server()
 /*
 	Builds host's connection string
 	Returns:
-		string - "<address>:<port>"
+		string - "<address> <port>"
 */
 string Server::get_client_connection_string() const {
   char buffer[16];
   sprintf(buffer, "%d", port_);
-  return address_  + ":" + buffer;
+  return address_  + " " + buffer;
 }
 
 /*
@@ -65,12 +63,18 @@ string Server::get_client_connection_string() const {
 	Returns:
 		bool - is this a usable interface?
 */
-bool Server::is_good_interface(string name, string ip) {
-  if (name != "wlan0" && name != "eth0" && name != "en0") {
+bool Server::is_good_interface(ifaddrs *ifap) {
+  if ((ifap->ifa_flags & IFF_LOOPBACK) != 0) {
+    // This is a loopback address, not what we want
     return false;
   }
 
-  return ip.substr(0, 3) == "10.";
+  if (ifap->ifa_addr->sa_family != AF_INET) {
+    // This is not an IPv4 address, also not what we want
+    return false;
+  }
+
+  return true;
 }
 
 /*

@@ -75,7 +75,6 @@ void UDPServer::run()
 
   while ( true )
   {
-    cout << "Waiting for message..." << endl;
     recv_msg_size = recvfrom(
                  sock_,
                  (void *)buffer,
@@ -84,7 +83,6 @@ void UDPServer::run()
                  (struct sockaddr *)&sending_addr,
                  &fromLength
                 );
-    cout << "Message received..." << endl;
 
     if ( recv_msg_size < 0 )
     {
@@ -97,10 +95,6 @@ void UDPServer::run()
     clients_.push_back( sending_addr );
 
     handle_msg( 0, buffer );
-
-    cout << "recv_msg_size: " << recv_msg_size << endl;
-    cout << "datagram: " << buffer << endl;
-
   }
 }
 
@@ -135,6 +129,7 @@ bool UDPServer::handle_msg(int client, const char *reply)
   input:
     int client: handle on which client to reply to
     string reply: the reply to send
+
 */
 void UDPServer::respond(int client, string reply)
 {
