@@ -25,6 +25,7 @@ TCPServer::TCPServer()
 
 TCPServer::~TCPServer()
 {
+
   // Close all connections, including our listener socket
   for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
     pollfd conn = *it;
@@ -113,7 +114,7 @@ void TCPServer::run()
     // poll() was successful; loop through the clients_ to see who
     // sent us a message.
     for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
-      pollfd conn = *it;
+      pollfd &conn = *it;
 
       if (conn.revents == 0) {
         // Nothing happened on this connection
@@ -136,13 +137,16 @@ void TCPServer::run()
             exit(errno);
           }
 
-          // Add this client to our list of people we care about
+          // Set non-blocking and add this client to our list of 
+          // people we care about
+          int flags = fcntl(new_client, F_GETFL, 0);
+          fcntl(new_client, F_SETFL, flags | O_NONBLOCK);
           clients_.push_back(make_poll(new_client));
         }
 
         // Don't attempt to handle receiving logic, since this is the
         // listener socket.
-        continue;
+        break;
       }
 
       // If we have made it to here, conn describes a client who has sent us
@@ -157,7 +161,7 @@ void TCPServer::run()
           }
 
           // Fail otherwise
-          cerr << "error: bad recv() from client" << endl;
+          cerr << "error: bad recv() from client (errno: " << errno << ")" << endl;
           exit(errno);
         }
 
@@ -166,9 +170,13 @@ void TCPServer::run()
           // the requested client
           close(conn.fd);
           it = clients_.erase(it);
+
+          // Yeah yeah I know it's ugly but we need to break out of TWO loops
+          // and C++ doesn't do that
+          goto endForLoop;
         }
       }
-    }
+    } endForLoop:;
   }
 }
 
@@ -195,7 +203,7 @@ bool TCPServer::handle_msg(int client, const char *buffer) {
 }
 
 void TCPServer::respond(int client, string response) {
-  send(clients_[client].fd, response.c_str(), response.size(), 0);
+  send(client, response.c_str(), response.size(), 0);
 }
 
 void TCPServer::stop_session(int client) {

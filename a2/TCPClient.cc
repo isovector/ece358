@@ -1,8 +1,10 @@
 #include "TCPClient.h"
 
 #include <iostream>
+#include <string.h>
 #include <cstdlib>
 #include <unistd.h>
+#include <errno.h>
 
 using namespace std;
 
@@ -17,7 +19,6 @@ TCPClient::TCPClient()
     exit( 1 );
   }
 
-  int result;
   memset( &addr_, 0, sizeof( sockaddr_in ) );
   addr_.sin_family = AF_INET;
   // @TODO(Ariel): Determine a usable port number on ecelinux
@@ -67,7 +68,7 @@ void TCPClient::set_host_info( string host_address, int host_port )
 
   if ( result == -1 )
   {
-    cerr << "connection failed" << endl;
+    cerr << "connection failed (errno: " << errno << ")" << endl;
     close( sock_ );
     exit( 1 );
   }
@@ -87,22 +88,20 @@ string TCPClient::send_message( Message msg )
   static const size_t BUFFER_SIZE = 1024;
   char buffer[BUFFER_SIZE];
 
-  cout << "Waiting for message" << endl;
-
-  socklen_t addrLength = sizeof( sockaddr_in );
-  result = recvfrom(
+  ssize_t bytes = sizeof( sockaddr_in );
+  result = recv(
     sock_,
     buffer,
     BUFFER_SIZE,
-    0,
-    reinterpret_cast<sockaddr*>(&host_addr_),
-    &addrLength
+    0
   );
 
+  if (bytes <= 0) {
+    cerr << "error: bad reply from server" << endl;
+    exit(1);
+  }
 
   buffer[result] = '\0';
-
-  cout << "Received message: " << endl;
 
   return buffer;
 
