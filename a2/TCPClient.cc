@@ -29,6 +29,9 @@ TCPClient::TCPClient()
 
 TCPClient::~TCPClient()
 {
+   (void) shutdown( sock_, SHUT_RDWR );
+
+   close( sock_ );
 
 }
 
@@ -69,15 +72,38 @@ void TCPClient::set_host_info( string host_address, int host_port )
     exit( 1 );
   }
 
- //    /* perform read write operations ... */
-
- //    (void) shutdown(SocketFD, SHUT_RDWR);
-
- //    close(SocketFD);
- //    return EXIT_SUCCESS;
 }
 
 string TCPClient::send_message( Message msg )
 {
+  int result = send( sock_, msg.serialize(), sizeof( Message ), 0 );
+
+  if ( result != sizeof( Message ) )
+  {
+    cerr << "error: failed to sent entire message" << endl;
+    exit( 1 );
+  }
+
+  static const size_t BUFFER_SIZE = 1024;
+  char buffer[BUFFER_SIZE];
+
+  cout << "Waiting for message" << endl;
+
+  socklen_t addrLength = sizeof( sockaddr_in );
+  result = recvfrom(
+    sock_,
+    buffer,
+    BUFFER_SIZE,
+    0,
+    reinterpret_cast<sockaddr*>(&host_addr_),
+    &addrLength
+  );
+
+
+  buffer[result] = '\0';
+
+  cout << "Received message: " << endl;
+
+  return buffer;
 
 }
