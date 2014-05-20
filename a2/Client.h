@@ -25,7 +25,7 @@ class Client
 		void send_stop_session();
 		void send_stop();
 
-		virtual void set_host_info(std::string host_address, int host_port) = 0;
+		virtual void set_host_info(std::string host_address, std::string host_port) = 0;
 
 	protected:
 		virtual std::string send_message(Message msg) = 0;

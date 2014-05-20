@@ -5,6 +5,10 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 using namespace std;
 
@@ -40,39 +44,51 @@ TCPClient::~TCPClient()
   Initialize socket connection
 
 */
-void TCPClient::set_host_info( string host_address, int host_port )
+void TCPClient::set_host_info( string host_address, string host_port )
 {
-  host_port_ = host_port;
+  host_port_ = atoi(host_port.c_str());
 
-  int result;
+  addrinfo *lookup, *lookup_head;
+  // Determine our endpoint for the socket
+  int result = getaddrinfo(
+    host_address.c_str(),
+    host_port.c_str(),
+    NULL,
+    &lookup_head);
 
-  memset( &host_addr_, 0, sizeof( host_addr_ ) );
-  host_addr_.sin_family = AF_INET;
-  host_addr_.sin_port = htons( host_port_ );
-  result = inet_pton( AF_INET, host_address.c_str(), &host_addr_.sin_addr );
-
-  if ( result < 0 )
-  {
-    cerr << "First parameter is not a valid address family" << endl;
-    close( sock_ );
-    exit( 1 );
+  if (result < 0) {
+    // name lookup failed
+    cerr << "error: could not find host: " << host_address << endl;
+    exit(1);
   }
-  else if ( result == 0 )
-  {
-    cerr << "Second paramter is not a valid IP address" << endl;
-    close( sock_ );
-    exit( 1 );
+
+  // search through all of the resolved addresses
+  lookup = lookup_head;
+  while (lookup) {
+    if (lookup->ai_family != AF_INET) {
+      lookup = lookup->ai_next;
+      continue;
+    }
+
+    memcpy(&host_addr_, lookup->ai_addr, sizeof(sockaddr_in));
+    break;
   }
+
+  if (!lookup) {
+    // name resolution failed
+    cerr << "error: could not find host: " << host_address << endl;
+    exit(1);
+  }
+
+  freeaddrinfo(lookup_head);
 
   result = connect( sock_, (struct sockaddr *)&host_addr_, sizeof( host_addr_ ) );
-
   if ( result == -1 )
   {
     cerr << "connection failed (errno: " << errno << ")" << endl;
     close( sock_ );
     exit( 1 );
   }
-
 }
 
 string TCPClient::send_message( Message msg )

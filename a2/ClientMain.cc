@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
 	}
 	else
 	{
-		client.set_host_info( argv[1], atoi( argv[2] ) );
+		client.set_host_info( argv[1], argv[2] );
 	}
 
 	string line;
