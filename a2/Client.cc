@@ -13,11 +13,11 @@ Client::~Client()
 
 }
 
-// The client program sends GET commands to the server to
-// retrieve students names based on their group number and id w/in the group
-// It reads which group and student ID it should perform a GET for by reading
-// from stdin. It prints non-error responses it receives from
-// the server to stdout. It prints error responses it receives to stderr.
+//  Description:
+//    Sends a GET message to the server and prints the reply.
+//  Input:
+//    int group_id   : the id of the group the student is a part of
+//    int student_id : the id of the student we're interested in
 void Client::send_get( int group_id, int student_id )
 {
   string reply = send_message( Message(
@@ -25,20 +25,18 @@ void Client::send_get( int group_id, int student_id )
                   static_cast<uint32_t>(group_id),
                   static_cast<uint32_t>(student_id)
                  ));
-  cout << reply << endl; 
+  cout << reply << endl;
 }
 
-// If the client receives an EOF on stdin, it sends
-//  a STOP SESSION command to the server, and terminates itself.
-// If the client reads the special string STOP on stdin, it sends
-//  the STOP command to the server, and terminates itself.
-// If one (any) client sends a STOP command, this causes the server
-//  it is communicating with, to terminate gracefully.
+//  Description:
+//    Sends a STOP_SESSION message to the server.
 void Client::send_stop_session()
 {
   send_message(Message::STOP_SESSION);
 }
 
+//  Description:
+//    Sends a STOP message to the server
 void Client::send_stop()
 {
   send_message(Message::STOP);
