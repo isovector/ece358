@@ -24,8 +24,10 @@ class UDPServer: public Server
 	private:
 		int sock_;
 		sockaddr_in socket_address_;
-
 		std::vector<sockaddr_in> clients_;
+
+		int get_client_num( sockaddr_in source_addr );
+		int remove_client( sockaddr_in source_addr );
 };
 
 #endif

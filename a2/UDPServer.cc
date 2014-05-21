@@ -69,8 +69,8 @@ void UDPServer::init()
 void UDPServer::run()
 {
   char buffer[1024];
-  sockaddr_in sending_addr;
-  socklen_t fromLength = sizeof( sending_addr );
+  sockaddr_in source_addr;
+  socklen_t fromLength = sizeof( source_addr );
   ssize_t recv_msg_size;
 
   while ( true )
@@ -80,7 +80,7 @@ void UDPServer::run()
                  (void *)buffer,
                  sizeof( buffer ),
                  0,
-                 (struct sockaddr *)&sending_addr,
+                 (struct sockaddr *)&source_addr,
                  &fromLength
                 );
 
@@ -91,15 +91,24 @@ void UDPServer::run()
       exit( 1 );
     }
 
-    // process_sending_addr( sending_addr );
-    clients_.push_back( sending_addr );
+    // process_sending_addr( source_addr );
+    // clients_.push_back( source_addr );
+    int client_num = get_client_num( source_addr );
 
-    handle_msg( 0, buffer );
+    // @TODO check the return value of this function and act accordingly
+    bool was_stop_session_msg =  handle_msg( client_num, buffer );
+
+    // if ( was_stop_session_msg )
+    // {
+
+    // }
   }
 }
 
 /*
   Handles a message
+
+  // Should really accept sockaddr_in struct instead of client number
 */
 bool UDPServer::handle_msg(int client, const char *reply)
 {
@@ -151,9 +160,30 @@ void UDPServer::stop_session( int client )
 
 }
 
+int UDPServer::get_client_num( sockaddr_in source_addr )
+{
+  sockaddr_in client_addr;
+  for ( int i = 0; i < clients_.size(); i++ )
+  {
+    client_addr = clients_.at(i);
+    if ( client_addr.sin_port == source_addr.sin_port &&
+         client_addr.sin_addr.s_addr == source_addr.sin_addr.s_addr )
+    {
+      // Have already communicated with client
+      return i;
+    }
+  }
+
+  clients_.push_back( source_addr );
+  return ( clients_.size() - 1 );
+
+}
+
 /*
   Server Termination
 */
 void UDPServer::stop()
 {
+  close( sock_ );
+  exit( 1 );
 }
