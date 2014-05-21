@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+astyle --options=../.astylerc -r '*.cc' &&
+astyle --options=../.astylerc -r '*.h' &&
+rm *.orig
