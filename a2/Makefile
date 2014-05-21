@@ -24,11 +24,6 @@ UDP_CLIENT_DEPENDENCIES = ${UDP_CLIENT_OBJECTS:.o=.d}
 TCP_SERVER_DEPENDENCIES = ${TCP_SERVER_OBJECTS:.o=.d}
 UDP_SERVER_DEPENDENCIES = ${UDP_SERVER_OBJECTS:.o=.d}
 
--include ${TCP_CLIENT_DEPENDENCIES}
--include ${UDP_CLIENT_DEPENDENCIES}
--include ${TCP_SERVER_DEPENDENCIES}
--include ${UDP_SERVER_DEPENDENCIES}
-
 tcp : TCPClient TCPServer
 
 udp : UDPClient UDPServer
@@ -38,10 +33,10 @@ clean :
 
 # TCP commands
 TCPClient : ${TCP_CLIENT_OBJECTS}
-	${CXX} ${CXXFLAGS} $^ ${TCP_FLAG} -o client
+	${CXX} ${CXXFLAGS} $^ -o client
 
 TCPServer : ${TCP_SERVER_OBJECTS}
-	${CXX} ${CXXFLAGS} $^ ${TCP_FLAG} -o server
+	${CXX} ${CXXFLAGS} $^ -o server
 
 UDPClient : ${UDP_CLIENT_OBJECTS}
 	${CXX} ${CXXFLAGS} $^ -o client
