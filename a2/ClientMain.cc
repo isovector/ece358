@@ -64,8 +64,7 @@ int main(int argc, char *argv[])
             input >> student_number;
 
             // check validity of student num
-            if ( input.fail() )
-            {
+            if (input.fail()) {
                 cerr << "error: must enter student number" << endl;
                 continue;
             }
