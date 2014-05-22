@@ -12,6 +12,8 @@
 
 using namespace std;
 
+//  Description:
+//    The constructor creates the client's TCP socket
 TCPClient::TCPClient()
   : sock_(-1)
 {
@@ -32,6 +34,8 @@ TCPClient::TCPClient()
   // Connection to host set in set_host_info
 }
 
+//  Description:
+//    The destructor ensures that the socket is closed correctly
 TCPClient::~TCPClient()
 {
    (void) shutdown( sock_, SHUT_RDWR );
@@ -40,10 +44,12 @@ TCPClient::~TCPClient()
 
 }
 
-/*
-  Initialize socket connection
-
-*/
+//  Description:
+//    Set host address info based on input from stdin.
+//    Will convert from domain name to IP address if necessary
+//  Input:
+//    string host_address : the server's address, either a domain name or IP address
+//    string host_port    : the port that the server is listening on
 void TCPClient::set_host_info( string host_address, string host_port )
 {
   host_port_ = atoi(host_port.c_str());
@@ -91,6 +97,12 @@ void TCPClient::set_host_info( string host_address, string host_port )
   }
 }
 
+//  Description:
+//    Sends a message to the server and receives reply
+//  Input:
+//    Message msg : the message to be sent to the server
+//  Output:
+//    char buffer[BUFFER_SIZE] : the server's reply
 string TCPClient::send_message( Message msg )
 {
   int result = send( sock_, msg.serialize(), sizeof( Message ), 0 );
