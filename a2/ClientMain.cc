@@ -59,10 +59,15 @@ int main(int argc, char *argv[])
         } else if (peekedChar >= '0' && peekedChar <= '9') {
             // check validity of group/student num
             input >> group_id;
-            // cout << "group_id: " << group_id << endl;
 
             // Grab rest of input
             input >> student_number;
+
+            if ( input.fail() )
+            {
+                cerr << "error: must enter student number" << endl;
+                continue;
+            }
             // cout << "student_number: " << student_number << endl;
 
             // Check validity of input
@@ -73,6 +78,9 @@ int main(int argc, char *argv[])
             } else {
                 client.send_get(group_id, student_number);
             }
+
+            // group_id = -1;
+            // student_number = -1;
 
         } else {
             cerr << "error: invalid input" << endl;
