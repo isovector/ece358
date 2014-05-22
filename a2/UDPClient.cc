@@ -12,6 +12,8 @@
 
 using namespace std;
 
+//  Description:
+//    The constructor creates and binds the client's socket
 UDPClient::UDPClient()
   : sock_(-1)
 {
@@ -41,6 +43,8 @@ UDPClient::UDPClient()
   }
 }
 
+//  Description:
+//    The destructor closes the socket if necessary.
 UDPClient::~UDPClient()
 {
   if (sock_ != -1) {
@@ -48,6 +52,12 @@ UDPClient::~UDPClient()
   }
 }
 
+//  Description:
+//    Sends a message to the server
+//  Input:
+//    Message msg : the message to be sent to the server
+//  Returns:
+//    char buffer[BUFFER_SIZE] : the server's reply
 string UDPClient::send_message(Message msg)
 {
   // Send the message to sock_
@@ -85,6 +95,12 @@ string UDPClient::send_message(Message msg)
   return buffer;
 }
 
+//  Description:
+//    Set host address info based on input from stdin.
+//    Will convert from domain name to IP address if necessary
+//  Input:
+//    string host_address : the server's address, either a domain name or IP address
+//    string host_port    : the port that the server is listening on
 void UDPClient::set_host_info( string host_address, string host_port )
 {
   addrinfo *lookup, *lookup_head;
