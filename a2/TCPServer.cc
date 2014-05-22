@@ -10,6 +10,8 @@
 #include "Message.h"
 using namespace std;
 
+//  Description:
+//
 pollfd make_poll(int sock) {
   pollfd result;
   result.fd = sock;
@@ -23,10 +25,11 @@ TCPServer::TCPServer()
 {
 }
 
+
+//  Description:
+//    The destructor closes all connections, including the listener socket
 TCPServer::~TCPServer()
 {
-
-  // Close all connections, including our listener socket
   for (vector<pollfd>::iterator it = clients_.begin(); it != clients_.end(); ++it) {
     pollfd conn = *it;
     close(conn.fd);
@@ -35,6 +38,8 @@ TCPServer::~TCPServer()
   clients_.clear();
 }
 
+//  Description:
+//    Creates and binds the server's socket.
 void TCPServer::init() {
   sockaddr_in socket_address;
   int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -84,6 +89,9 @@ void TCPServer::init() {
   clients_.push_back(make_poll(sock));
 }
 
+//  Description:
+//    What the server does until it receives a STOP command.
+//    Check for incoming messages and send replies.
 void TCPServer::run()
 {
   int sock = clients_[0].fd;
@@ -137,7 +145,7 @@ void TCPServer::run()
             exit(errno);
           }
 
-          // Set non-blocking and add this client to our list of 
+          // Set non-blocking and add this client to our list of
           // people we care about
           int flags = fcntl(new_client, F_GETFL, 0);
           fcntl(new_client, F_SETFL, flags | O_NONBLOCK);
@@ -180,6 +188,13 @@ void TCPServer::run()
   }
 }
 
+//  Description:
+//    Reads a message and acts according to the message type.
+//  Input:
+//    int client         : the client that sent the message
+//    const char *buffer : the serialized message that was sent to the server
+//  Returns:
+//    true if the message was of type STOP_SESSION
 bool TCPServer::handle_msg(int client, const char *buffer) {
   Message msg = Message::deserialize(buffer);
   switch (msg.command) {
@@ -202,14 +217,23 @@ bool TCPServer::handle_msg(int client, const char *buffer) {
   }
 }
 
+//  Description:
+//    Sends a reply to a client.
+//  Input:
+//    int client      : the client to respond to (index for clients_)
+//    string response : the server's response to the client's message
 void TCPServer::respond(int client, string response) {
   send(client, response.c_str(), response.size(), 0);
 }
 
+//  Description:
+//
 void TCPServer::stop_session(int client) {
   // Intentionally left empty -- see corresponding code in run()
 }
 
+//  Description:
+//    Close down the server.
 void TCPServer::stop() {
   // The deconstructor will handle cleaning up the sockets for us
   exit(0);
