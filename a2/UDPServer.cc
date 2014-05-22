@@ -21,6 +21,8 @@ UDPServer::~UDPServer()
 
 }
 
+//  Description:
+//    Creates and binds the server's socket.
 void UDPServer::init()
 {
   sock_ = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
@@ -66,6 +68,9 @@ void UDPServer::init()
   }
 }
 
+//  Description:
+//    What the server does until it receives a STOP command.
+//    Check for incoming messages and send replies.
 void UDPServer::run()
 {
   char buffer[1024];
@@ -105,11 +110,13 @@ void UDPServer::run()
   }
 }
 
-/*
-  Handles a message
-
-  // Should really accept sockaddr_in struct instead of client number
-*/
+//  Description:
+//    Reads a message and acts according to the message type.
+//  Input:
+//    int client         : the client that sent the message
+//    const char *reply : the serialized message that was sent to the server
+//  Returns:
+//    true if the message was of type STOP_SESSION
 bool UDPServer::handle_msg(int client, const char *reply)
 {
   Message msg = Message::deserialize(reply);
@@ -133,13 +140,11 @@ bool UDPServer::handle_msg(int client, const char *reply)
   }
 }
 
-/*
-  Responds to a client
-  input:
-    int client: handle on which client to reply to
-    string reply: the reply to send
-
-*/
+//  Description:
+//    Sends a reply to a client.
+//  Input:
+//    int client      : the client to respond to (index for clients_)
+//    string response : the server's response to the client's message
 void UDPServer::respond(int client, string reply)
 {
   sendto(
@@ -152,14 +157,19 @@ void UDPServer::respond(int client, string reply)
   );
 }
 
-/*
-  Process an end of session message from a client
-*/
+//  Description:
+//    Process an end of session message from a client
 void UDPServer::stop_session( int client )
 {
 
 }
 
+//  Description:
+//    Finds a client's index in clients_ based on their address.
+//  Input:
+//    sockaddr_in source_addr : address a message came from
+//  Returns:
+//    A client's index in clients_
 int UDPServer::get_client_num( sockaddr_in source_addr )
 {
   sockaddr_in client_addr;
@@ -179,9 +189,8 @@ int UDPServer::get_client_num( sockaddr_in source_addr )
 
 }
 
-/*
-  Server Termination
-*/
+//  Description:
+//    Close down the server.
 void UDPServer::stop()
 {
   close( sock_ );
