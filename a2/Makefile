@@ -26,13 +26,13 @@ clean :
 
 # TCP commands
 TCPClient : ${TCP_CLIENT_OBJECTS}
-	${CXX} ${CXXFLAGS} $^ -o client
+	${CXX} ${CXXFLAGS} $^ -o client; rm -f *.d *.o;
 
 TCPServer : ${TCP_SERVER_OBJECTS}
-	${CXX} ${CXXFLAGS} $^ -o server
+	${CXX} ${CXXFLAGS} $^ -o server; rm -f *.d *.o;
 
 UDPClient : ${UDP_CLIENT_OBJECTS}
-	${CXX} ${CXXFLAGS} $^ -o client
+	${CXX} ${CXXFLAGS} $^ -o client; rm -f *.d *.o;
 
 UDPServer : ${UDP_SERVER_OBJECTS}
-	${CXX} ${CXXFLAGS} $^ -o server
+	${CXX} ${CXXFLAGS} $^ -o server; rm -f *.d *.o;
