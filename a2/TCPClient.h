@@ -7,20 +7,20 @@
 
 class TCPClient : public Client
 {
-	public:
-		TCPClient();
-		virtual ~TCPClient();
+public:
+    TCPClient();
+    virtual ~TCPClient();
 
-		virtual void set_host_info( std::string host_address, std::string host_port );
+    virtual void set_host_info(std::string host_address, std::string host_port);
 
-	protected:
-		virtual std::string send_message( Message msg );
-		int host_port_;
+protected:
+    virtual std::string send_message(Message msg);
+    int host_port_;
 
-	private:
-		int sock_;
-		sockaddr_in addr_;
-		sockaddr_in host_addr_;
+private:
+    int sock_;
+    sockaddr_in addr_;
+    sockaddr_in host_addr_;
 
 };
 

@@ -12,7 +12,7 @@
 
 class Server
 {
-  public:
+public:
     Server();
     virtual ~Server();
 
@@ -22,7 +22,7 @@ class Server
 
     std::string get_client_connection_string() const;
 
-  protected:
+protected:
     // Message handling methods
     virtual bool handle_msg(int client, const char *msg) = 0;
     virtual void respond(int client, std::string reply) = 0;
@@ -37,7 +37,7 @@ class Server
     std::string address_;
     int port_;
 
-  private:
+private:
     static bool is_good_interface(ifaddrs *ifap);
 };
 

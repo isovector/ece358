@@ -5,14 +5,14 @@
 
 class UDPClient: public Client
 {
-	public:
-		UDPClient();
-		virtual ~UDPClient();
+public:
+    UDPClient();
+    virtual ~UDPClient();
 
-    virtual void set_host_info( std::string host_address, std::string host_port );
+    virtual void set_host_info(std::string host_address, std::string host_port);
 
-	protected:
-		virtual std::string send_message(Message msg);
+protected:
+    virtual std::string send_message(Message msg);
 
     int sock_;
     sockaddr_in addr_;

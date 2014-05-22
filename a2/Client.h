@@ -17,19 +17,19 @@
 
 class Client
 {
-	public:
-		Client();
-		virtual ~Client();
+public:
+    Client();
+    virtual ~Client();
 
-		void send_get(int group_id, int student_id);
-		void send_stop_session();
-		void send_stop();
+    void send_get(int group_id, int student_id);
+    void send_stop_session();
+    void send_stop();
 
-		virtual void set_host_info(std::string host_address, std::string host_port) = 0;
+    virtual void set_host_info(std::string host_address, std::string host_port) = 0;
 
-	protected:
-		virtual std::string send_message(Message msg) = 0;
-		int host_port_;
+protected:
+    virtual std::string send_message(Message msg) = 0;
+    int host_port_;
 };
 
 #endif

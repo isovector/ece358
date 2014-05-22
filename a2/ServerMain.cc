@@ -15,54 +15,48 @@ using namespace std;
 
 int main(void)
 {
-	// The server ﬁrst reads stdin for group information
-	// group IDs, each followed by a list of student IDs
-	// and names that belong to that group,
-	// with the input terminated by EOF
-	int group_id;
-	bool group_has_been_set = false;
+    // The server ﬁrst reads stdin for group information
+    // group IDs, each followed by a list of student IDs
+    // and names that belong to that group,
+    // with the input terminated by EOF
+    int group_id;
+    bool group_has_been_set = false;
 
-  server.init();
-  cout << server.get_client_connection_string() << endl;
+    server.init();
+    cout << server.get_client_connection_string() << endl;
 
-	string command;
-	while (cin >> command) {
-	  if (command == "Group")
-	  {
-	    // Set the current Group ID
-	    group_has_been_set = true;
-	    cin >> group_id;
-	  }
-	  else if (isdigit(command[0]))
-	  {
-	    // Student lines begin with their student_id, but we need a group to put
-	    // them into first.
-	    if (!group_has_been_set)
-	    {
-	      cerr << "error: no group" << endl;
-	      exit(1);
-	    }
+    string command;
 
-	    int student_id = atoi(command.c_str());
+    while (cin >> command) {
+        if (command == "Group") {
+            // Set the current Group ID
+            group_has_been_set = true;
+            cin >> group_id;
+        } else if (isdigit(command[0])) {
+            // Student lines begin with their student_id, but we need a group to put
+            // them into first.
+            if (!group_has_been_set) {
+                cerr << "error: no group" << endl;
+                exit(1);
+            }
 
-	    string name;
-	    getline(cin, name);
+            int student_id = atoi(command.c_str());
 
-	    // Due to how getline works, we'll get the deliminating space prefixed
-	    // into the student's name, so remove it if it's present.
-	    if (name[0] == ' ')
-	    {
-	      name.erase(0, 1);
-	    }
+            string name;
+            getline(cin, name);
 
-	    server.add_student(group_id, student_id, name);
-	  }
-	  else
-	  {
-	    cerr << "error: bad input" << endl;
-	    exit(2);
-	  }
-	}
+            // Due to how getline works, we'll get the deliminating space prefixed
+            // into the student's name, so remove it if it's present.
+            if (name[0] == ' ') {
+                name.erase(0, 1);
+            }
 
-  server.run();
+            server.add_student(group_id, student_id, name);
+        } else {
+            cerr << "error: bad input" << endl;
+            exit(2);
+        }
+    }
+
+    server.run();
 }
