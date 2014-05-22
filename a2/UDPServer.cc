@@ -89,17 +89,12 @@ void UDPServer::run()
             exit(1);
         }
 
-        // process_sending_addr( source_addr );
-        // clients_.push_back( source_addr );
         int client_num = get_client_num(source_addr);
 
-        // @TODO check the return value of this function and act accordingly
-        bool was_stop_session_msg =  handle_msg(client_num, buffer);
-
-        // if ( was_stop_session_msg )
-        // {
-
-        // }
+        // Client numbers were put in to support graceful termination
+        // of blocked clients, but the prof mentioned in class
+        // that we could leave the clients hanging.
+        handle_msg(client_num, buffer);
     }
 }
 
@@ -109,7 +104,7 @@ void UDPServer::run()
 //    int client         : the client that sent the message
 //    const char *reply : the serialized message that was sent to the server
 //  Returns:
-//    true if the message was of type STOP_SESSION
+//    true if the message was of type STOP_SESSION. Only relevant for TCPServer
 bool UDPServer::handle_msg(int client, const char *reply)
 {
     Message msg = Message::deserialize(reply);

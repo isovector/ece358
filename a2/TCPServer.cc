@@ -87,6 +87,13 @@ void TCPServer::init()
     // clients_ is a misnomer, since clients_[0] is not a client -- it is the
     // listener socket
     clients_.push_back(make_poll(sock));
+
+    result = listen(sock, 8);
+
+    if (result == -1) {
+        cerr << "error: unable to listen" << endl;
+        exit(1);
+    }
 }
 
 //  Description:
@@ -96,13 +103,6 @@ void TCPServer::run()
 {
     int sock = clients_[0].fd;
     int result;
-
-    result = listen(sock, 8);
-
-    if (result == -1) {
-        cerr << "error: unable to listen" << endl;
-        exit(1);
-    }
 
     // 3 minute timeout for polling
     size_t timeout = 3 * 60 * 1000;

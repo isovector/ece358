@@ -57,13 +57,18 @@ int main(int argc, char *argv[])
                 continue;
             }
         } else if (peekedChar >= '0' && peekedChar <= '9') {
-            // check validity of group/student num
+            // check validity of group num
             input >> group_id;
-            // cout << "group_id: " << group_id << endl;
 
             // Grab rest of input
             input >> student_number;
-            // cout << "student_number: " << student_number << endl;
+
+            // check validity of student num
+            if ( input.fail() )
+            {
+                cerr << "error: must enter student number" << endl;
+                continue;
+            }
 
             // Check validity of input
             if (group_id <= 0 || student_number <= 0) {
