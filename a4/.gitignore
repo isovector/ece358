@@ -1,0 +1,4 @@
+*.o
+*.d
+testHarness
+a.out
