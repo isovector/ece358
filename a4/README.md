@@ -3,7 +3,7 @@
 There's a test harness now! Add unit tests to "tests/" -- see "tests/basic.cc" 
 for an example. To run them:
 
-> $ make tests
+> $ make test
 
 Easy!
 

@@ -1,4 +1,4 @@
 *.o
 *.d
-testHarness
+./test
 a.out
