@@ -1,6 +1,7 @@
 #pragma once
 
 #define EXPECT(expr) { if (!(expr)) fail_test(#expr); }
+#define EXPECT_N(n, expr) { int ___value = expr; if (___value != n) fail_test_n(#expr, ___value, n); }
 
 #define UNIT_TEST(name) \
     void __unit_test__##name(); \
@@ -24,4 +25,5 @@ public:
 };
 
 void fail_test(const char *msg);
+void fail_test_n(const char *msg, int value, int n);
 

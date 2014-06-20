@@ -3,7 +3,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <errno.h>
 using namespace std;
+
 
 typedef map<const char*, unit_test_func> tests_t;
 tests_t UnitTestRegistrar::registeredTests;
@@ -19,6 +21,14 @@ ostream &set_color(const char *color) {
 bool testHasFailed;
 void fail_test(const char *msg) {
     set_color("0;31") << "Expected `" << msg << "` failed" << endl;
+    cout << "    errno: " << errno << endl;
+    set_color(false);
+    testHasFailed = true;
+}
+
+void fail_test_n(const char *msg, int val, int n) {
+    set_color("0;31") << "Expected `" << msg << "` to have value `" << n << "`, got `" << val << "`"  << endl;
+    cout << "    errno: " << errno << endl;
     set_color(false);
     testHasFailed = true;
 }
