@@ -23,14 +23,14 @@ int rcs_t::makeSocket() {
 
 
 rcs_t::rcs_t() {
+    ucpSocket_ = ucpSocket();
+
 }
 
 rcs_t::~rcs_t() {
 }
 
 int rcs_t::bind(const sockaddr_in *addr) {
-    ucpSocket_ = ucpSocket();
-
     return ucpBind(ucpSocket_, addr);
 }
 

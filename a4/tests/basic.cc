@@ -40,8 +40,14 @@ UNIT_TEST(BasicSendRecv) {
     EXPECT(0 == rcsConnect(server, &clientAddr));
 
     string data = "hello thug life how are you today?";
-    size_t len = data.length();
+    int len = (int)data.length();
 
     EXPECT_N(len, rcsSend(server, data.c_str(), len));
+
+    char buffer[1024];
+
+    EXPECT_N(len, rcsRecv(client, buffer, 1024));
+
+    EXPECT(data == buffer);
 }
 
