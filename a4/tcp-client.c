@@ -6,6 +6,11 @@
  * occasionally in the midst of reading & sending.
  */
 
+ /*
+    A client will invoke rcsSocket(), rcsBind(), rcsConnect(), rcsRecv(),
+    rcsSend() and rcsClose().
+ */
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>

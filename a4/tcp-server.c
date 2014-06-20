@@ -6,6 +6,10 @@
  * write()'s it to a file whose name is the thread's ID.
  */
 
+/*
+    A server based on your API will invoke rcsSocket(), rcsBind(), rcsListen(), rcsAccept(), rcsRecv(),
+    rcsSend() and rcsClose().
+*/
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -92,7 +96,7 @@ uint32_t getPublicIPAddr() {
 	    memcpy(&a, (c->ifa_addr), sizeof(struct sockaddr_in));
 	    char *as = inet_ntoa(a.sin_addr);
 	    //printf("%s\n", as);
-	    
+
 	    int apart;
 	    sscanf(as, "%d", &apart);
 	    if(apart > 0 && apart != 127) {
@@ -124,7 +128,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("%s %u\n", inet_ntoa(a.sin_addr), ntohs(a.sin_port));
-    
+
     if(listen(s, 0) < 0) {
 	perror("listen"); exit(0);
     }
