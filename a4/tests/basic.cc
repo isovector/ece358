@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 using namespace std;
 
+extern bool testHasFailed;
+
 sockaddr_in getAddr(short port)
 {
 	sockaddr_in addr;
@@ -48,15 +50,18 @@ UNIT_TEST(BasicSendRecv) {
     EXPECT(0 == rcsConnect(client, &serverAddr));
     EXPECT(0 == rcsConnect(server, &clientAddr));
 
-    string data = "hello thug life how are you today?";
+    string data = "the quick brown fox jumps OVER the lazy dawgggg";
     int len = (int)data.length();
-
-    EXPECT_N(len, rcsSend(server, data.c_str(), len));
-
     char buffer[1024];
 
-    EXPECT_N(len, rcsRecv(client, buffer, 1024));
+    for (int i = 0; i < 1; ++i) {
+        EXPECT_N(len, rcsSend(server, data.c_str(), len));
+        EXPECT_N(len, rcsRecv(client, buffer, 1024));
+        EXPECT(data == buffer);
 
-    EXPECT(data == buffer);
+        if (testHasFailed) {
+            break;
+        }
+    }
 }
 

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "ucp_c.h"
+#include "message.h"
 #include <map>
+#include "msg_buffer.h"
 
 class rcs_t {
     typedef std::map<int, rcs_t> sockets_t;
@@ -22,5 +24,6 @@ public:
 private:
     int ucpSocket_;
     sockaddr_in endPoint_;
+    msg_buffer_t buffer_;
 };
 

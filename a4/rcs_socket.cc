@@ -1,6 +1,7 @@
 #include "rcs_socket.h"
 #include <string.h>
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
@@ -50,6 +51,14 @@ int rcs_t::connect(const sockaddr_in *addr) {
 }
 
 int rcs_t::send(const char *data, size_t length) const {
+    for (
+        size_t processedSize = 0; 
+        processedSize <= length; 
+        processedSize += MAX_DATA_LENGTH
+    ) {
+        msg_t msg(data + processedSize, min(length - processedSize, MAX_DATA_LENGTH));
+    }
+
     //TODO: error recovery
     return ucpSendTo(
         ucpSocket_, 
