@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <vector>
 #include <errno.h>
+#include <cstdio>
 using namespace std;
 
 
@@ -29,6 +30,7 @@ void fail_test(const char *msg) {
 void fail_test_n(const char *msg, int val, int n) {
     set_color("0;31") << "Expected `" << msg << "` to have value `" << n << "`, got `" << val << "`"  << endl;
     cout << "    errno: " << errno << endl;
+    perror("    perror");
     set_color(false);
     testHasFailed = true;
 }

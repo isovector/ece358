@@ -1,11 +1,12 @@
 #include "rcs_socket.h"
 #include <string.h>
+#include <iostream>
 using namespace std;
 
-map<int, rcs_t> rcs_t::sSocketIdentifiers;
+rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
 rcs_t &rcs_t::getSocket(int id) {
-    map<int, rcs_t>::iterator it = sSocketIdentifiers.find(id);
+    sockets_t::iterator it = sSocketIdentifiers.find(id);
     if (it == sSocketIdentifiers.end()) {
         // make this a proper exception
         throw "BAD SOCKET, SUCKA";
@@ -21,13 +22,21 @@ int rcs_t::makeSocket() {
     return sNextId++;
 }
 
+void rcs_t::destroySocket(int id) {
+    sockets_t::iterator it = sSocketIdentifiers.find(id);
+    if (it == sSocketIdentifiers.end()) {
+        // make this a proper exception
+        throw "BAD SOCKET, SUCKA";
+    }
 
-rcs_t::rcs_t() {
-    ucpSocket_ = ucpSocket();
-
+    sSocketIdentifiers.erase(it);
 }
 
-rcs_t::~rcs_t() {
+
+
+rcs_t::rcs_t() : 
+    ucpSocket_(ucpSocket())
+{
 }
 
 int rcs_t::bind(const sockaddr_in *addr) {

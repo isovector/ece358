@@ -2,21 +2,30 @@
 #include "../rcs.h"
 #include <string>
 #include <string.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 using namespace std;
 
-
-int newSocket(short port) {
-    sockaddr_in addr;
-    memset(&addr, 0, sizeof(sockaddr_in));
-
+sockaddr_in getAddr(short port)
+{
+	sockaddr_in addr;
+	memset(&addr, 0, sizeof(sockaddr_in));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    return rcsSocket(); 
+    
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr.sin_port = htons(port);
+	return addr;
 }
 
-sockaddr_in getAddr(short port) {
+int newSocket(short port) {
+	int socket = rcsSocket();
+	sockaddr_in addr = getAddr(port);
+    int result = rcsBind(socket, &addr);
+    EXPECT(result >= 0);
+
+    return socket; 
 }
 
 UNIT_TEST(BasicSendRecv) {
