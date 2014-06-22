@@ -8,7 +8,7 @@ UNIT_TEST(MsgBufferTest) {
     msg_buffer_t buffer;
     EXPECT(!buffer.hasEnoughData(1));
 
-    buffer.queueMessage(msg_t("abcdefghijklmnopqrstuvwxyz", 26));
+    buffer.queueMessage(msg_t(0, "abcdefghijklmnopqrstuvwxyz", 26));
     EXPECT(buffer.hasEnoughData(26));
     EXPECT(!buffer.hasEnoughData(27));
 
@@ -23,7 +23,7 @@ UNIT_TEST(MsgBufferTest) {
     EXPECT(buffer.hasEnoughData(21));
     EXPECT(!buffer.hasEnoughData(22));
 
-    buffer.queueMessage(msg_t("abcdefghijklmnopqrstuvwxyz", 26));
+    buffer.queueMessage(msg_t(1, "abcdefghijklmnopqrstuvwxyz", 26));
     EXPECT(buffer.hasEnoughData(47));
 
     buffer.read(output, 47);

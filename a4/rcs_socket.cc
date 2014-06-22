@@ -2,6 +2,7 @@
 #include <string.h>
 #include <iostream>
 #include <algorithm>
+#include <errno.h>
 using namespace std;
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
@@ -36,8 +37,12 @@ void rcs_t::destroySocket(int id) {
 
 
 rcs_t::rcs_t() : 
-    ucpSocket_(ucpSocket())
+    ucpSocket_(ucpSocket()),
+    sendSeqnum_(0),
+    recvSeqnum_(0)
 {
+    //TODO: figure out a sane value for the timeout
+    ucpSetSockRecvTimeout(ucpSocket_, 10);
 }
 
 int rcs_t::bind(const sockaddr_in *addr) {
@@ -50,32 +55,79 @@ int rcs_t::connect(const sockaddr_in *addr) {
     return 0;
 }
 
-int rcs_t::send(const char *data, size_t length) const {
+int rcs_t::send(const char *data, size_t length) {
     for (
         size_t processedSize = 0; 
-        processedSize <= length; 
+        processedSize < length; 
         processedSize += MAX_DATA_LENGTH
     ) {
-        msg_t msg(data + processedSize, min(length - processedSize, MAX_DATA_LENGTH));
+        msg_t msg(
+            sendSeqnum_, 
+            data + processedSize, 
+            min(length - processedSize, MAX_DATA_LENGTH)
+        );
+
+        bool acked = false;
+        do {
+            rawsend(msg);
+
+            msg_t response;
+            if (rawrecv(&response)) {
+                if (response.seqnum == sendSeqnum_) {
+                    cout << "> ack " << response.seqnum << endl;
+                    acked = true;
+                    ++sendSeqnum_;
+                }
+            }
+        } while (!acked);
     }
 
-    //TODO: error recovery
+    return length;
+}
+
+int rcs_t::rawsend(const msg_t &msg) const {
     return ucpSendTo(
         ucpSocket_, 
-        static_cast<const void*>(data), 
-        static_cast<int>(length),
+        msg.serialize(), 
+        static_cast<int>(msg.getTotalLength()),
         &endPoint_
     );
 }
 
-int rcs_t::recv(char *data, size_t maxLength) const {
+bool rcs_t::rawrecv(msg_t *out) const {
+    char data[sizeof(msg_t)];
     sockaddr_in unused;
-    //TODO: error recovery
-    return ucpRecvFrom(
+
+    int result = ucpRecvFrom(
         ucpSocket_, 
         static_cast<void*>(data), 
-        static_cast<int>(maxLength),
+        sizeof(msg_t),
         &unused
     );
+
+    if (result == EWOULDBLOCK || result == EAGAIN) {
+        return false;
+    }
+
+    *out = msg_t::deserialize(data);
+    return out->valid();
+}
+
+int rcs_t::recv(char *data, size_t maxLength) {
+    while (!buffer_.hasEnoughData(maxLength)) {
+        msg_t response;
+        if (rawrecv(&response)) {
+            if (response.seqnum == recvSeqnum_) {
+                cout << "< recv " << response.seqnum << endl;
+                buffer_.queueMessage(response);
+                ++recvSeqnum_;
+            }
+
+            rawsend(msg_t(recvSeqnum_, msg_t::MSG_ACK));
+        }
+    }
+
+    buffer_.read(data, maxLength);
+    return maxLength;
 }
 

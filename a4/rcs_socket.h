@@ -18,12 +18,18 @@ public:
 
     int bind(const sockaddr_in *addr);
     int connect(const sockaddr_in *addr);
-    int send(const char *data, size_t length) const;
-    int recv(char *data, size_t maxLength) const;
+    int send(const char *data, size_t length);
+    int recv(char *data, size_t maxLength);
 
 private:
+    int rawsend(const msg_t &msg) const;
+    bool rawrecv(msg_t *out) const;
+
     int ucpSocket_;
     sockaddr_in endPoint_;
     msg_buffer_t buffer_;
+
+    uint16_t sendSeqnum_;
+    uint16_t recvSeqnum_;
 };
 

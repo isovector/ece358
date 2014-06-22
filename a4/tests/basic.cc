@@ -2,10 +2,12 @@
 #include "../rcs.h"
 #include <string>
 #include <string.h>
+#include <iostream>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 using namespace std;
 
 extern bool testHasFailed;
@@ -52,16 +54,13 @@ UNIT_TEST(BasicSendRecv) {
 
     string data = "the quick brown fox jumps OVER the lazy dawgggg";
     int len = (int)data.length();
-    char buffer[1024];
 
-    for (int i = 0; i < 1; ++i) {
+    if (fork()) {
         EXPECT_N(len, rcsSend(server, data.c_str(), len));
-        EXPECT_N(len, rcsRecv(client, buffer, 1024));
+    } else {
+        char buffer[1024];
+        EXPECT_N(len, rcsRecv(client, buffer, len));
         EXPECT(data == buffer);
-
-        if (testHasFailed) {
-            break;
-        }
     }
 }
 

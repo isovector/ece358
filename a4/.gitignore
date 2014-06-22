@@ -1,4 +1,4 @@
 *.o
 *.d
-./test
+test
 a.out
