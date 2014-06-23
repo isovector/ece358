@@ -40,6 +40,6 @@ UNIT_TEST(GetSocketName) {
     int result = rcsGetSockName(sock, &sock_addr);
     EXPECT(result == 0);
 
-    cout << sock_addr.sin_port << endl;
-    EXPECT(sock_addr.sin_port == 6413);
+    EXPECT(sock_addr.sin_addr.s_addr == inet_addr("127.0.0.1"));
+    EXPECT(sock_addr.sin_port == ntohs(6413));
 }
