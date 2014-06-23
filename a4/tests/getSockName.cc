@@ -1,7 +1,7 @@
 #include "harness.h"
 #include "../rcs.h"
-// #include <string>
-// #include <string.h>
+#include <string>
+#include <string.h>
 #include <iostream>
 
 #include <sys/socket.h>
