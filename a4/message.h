@@ -8,14 +8,16 @@ const size_t MAX_DATA_LENGTH = 32;
 class msg_t {
 public: 
     enum flags_t {
-        MSG_NONE = 0,
-        MSG_ACK = 1 << 0,
-        MSG_EOS = 1 << 1
+        NONE     = 0,
+        EST      = 1 << 0, // establish connection
+        ACK      = 1 << 1, // ack
+        EOS      = 1 << 2, // end of send()
+        FIN      = 1 << 3  // close channel
     };
 
     msg_t();
     msg_t(uint16_t seqnum, flags_t flags);
-    msg_t(uint16_t seqnum, const char *srcData, size_t len);
+    msg_t(uint16_t seqnum, const char *srcData, size_t len, flags_t flags = NONE);
 
     uint32_t checksum;
     uint16_t seqnum;
@@ -24,9 +26,12 @@ public:
     char data[MAX_DATA_LENGTH];
 
     bool valid() const;
+    bool hasFlag(flags_t mask) const;
     size_t getTotalLength() const;
 
     const char *serialize() const;
     static const msg_t deserialize(const char *buffer);
 };
+
+msg_t::flags_t operator|(msg_t::flags_t a, msg_t::flags_t b);
 

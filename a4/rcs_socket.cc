@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <errno.h>
+#include <sys/select.h>
 using namespace std;
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
@@ -31,6 +32,7 @@ void rcs_t::destroySocket(int id) {
         throw "BAD SOCKET, SUCKA";
     }
 
+    ucpClose(it->second.ucpSocket_);
     sSocketIdentifiers.erase(it);
 }
 
@@ -67,31 +69,26 @@ int rcs_t::send(const char *data, size_t length) {
             min(length - processedSize, MAX_DATA_LENGTH)
         );
 
-        bool acked = false;
-        do {
-            rawsend(msg);
+        acksend(msg);
+        ++sendSeqnum_;
+    }
 
-            msg_t response;
-            if (rawrecv(&response)) {
-                if (response.seqnum == sendSeqnum_) {
-                    cout << "> ack " << response.seqnum << endl;
-                    acked = true;
-                    ++sendSeqnum_;
-                }
-                else
-                {
-                    cout << "response: " << response.seqnum
-                         << "expected: " << sendSeqnum_ << endl;
-                }
-            }
-            else
-            {
-                // cout << "rawrecv failed" << endl;
-            }
-        } while (!acked);
-    } // end for
+    msg_t msg(sendSeqnum_, msg_t::EOS);
+    acksend(msg);
 
     return length;
+}
+
+void rcs_t::acksend(const msg_t &msg) const {
+    bool acked = false;
+    do {
+        rawsend(msg);
+
+        msg_t response;
+        if (rawrecv(&response) && response.seqnum == msg.seqnum) {
+            break;
+        }
+    } while (!acked);
 }
 
 int rcs_t::rawsend(const msg_t &msg) const {
@@ -119,24 +116,57 @@ bool rcs_t::rawrecv(msg_t *out) const {
     }
 
     *out = msg_t::deserialize(data);
-    return out->valid();
+    return out->valid() && static_cast<size_t>(result) == out->getTotalLength();
 }
 
 int rcs_t::recv(char *data, size_t maxLength) {
-    while (!buffer_.hasEnoughData(maxLength)) {
-        msg_t response;
+    if (!buffer_.hasEnoughData(maxLength)) {
+        while (true) {
+            msg_t response;
+            msg_t ack(recvSeqnum_ - 1, msg_t::ACK);
 
-        if (rawrecv(&response)) {
-            if (response.seqnum == recvSeqnum_) {
-                cout << "< recv " << response.seqnum << endl;
-                buffer_.queueMessage(response);
-                rawsend(msg_t(recvSeqnum_, msg_t::MSG_ACK));
-                ++recvSeqnum_;
+            if (rawrecv(&response)) {
+                if (response.seqnum == recvSeqnum_) {
+                    buffer_.queueMessage(response);
+                    ack.seqnum = recvSeqnum_;
+                    ++recvSeqnum_;
+                }
+
+                rawsend(ack);
+                if (response.hasFlag(msg_t::EOS)) {
+                    break;
+                }
             }
         }
+
+        while (poll()) {
+            msg_t response;
+            if (rawrecv(&response)) {
+                if (response.hasFlag(msg_t::EOS)) {
+                    rawsend(msg_t(response.seqnum, msg_t::ACK));
+                } else {
+                    break;
+                }
+            }
+        }
+
+        ++recvSeqnum_;
     }
 
     buffer_.read(data, maxLength);
     return maxLength;
+}
+
+bool rcs_t::poll() const {
+    fd_set rfds;
+    struct timeval tv;
+
+    FD_ZERO(&rfds);
+    FD_SET(ucpSocket_, &rfds);
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000;
+
+    return ucpSelect(1, &rfds, NULL, NULL, &tv) > 0;
 }
 

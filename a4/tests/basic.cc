@@ -3,6 +3,7 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+#include <cstdlib>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -55,12 +56,16 @@ UNIT_TEST(BasicSendRecv) {
     string data = "the quick brown fox jumps OVER the lazy dawgggg";
     int len = (int)data.length();
 
-    if (fork()) {
+    if (!fork()) {
         EXPECT_N(len, rcsSend(server, data.c_str(), len));
+        _exit(0);
     } else {
         char buffer[1024];
         EXPECT_N(len, rcsRecv(client, buffer, len));
         EXPECT(data == buffer);
     }
+
+    rcsClose(server);
+    rcsClose(client);
 }
 

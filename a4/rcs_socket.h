@@ -22,8 +22,10 @@ public:
     int recv(char *data, size_t maxLength);
 
 private:
+    void acksend(const msg_t &msg) const;
     int rawsend(const msg_t &msg) const;
     bool rawrecv(msg_t *out) const;
+    bool poll() const;
 
     int ucpSocket_;
     sockaddr_in endPoint_;
