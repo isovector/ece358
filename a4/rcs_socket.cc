@@ -36,7 +36,7 @@ void rcs_t::destroySocket(int id) {
 
 
 
-rcs_t::rcs_t() : 
+rcs_t::rcs_t() :
     ucpSocket_(ucpSocket()),
     sendSeqnum_(0),
     recvSeqnum_(0)
@@ -57,13 +57,13 @@ int rcs_t::connect(const sockaddr_in *addr) {
 
 int rcs_t::send(const char *data, size_t length) {
     for (
-        size_t processedSize = 0; 
-        processedSize < length; 
+        size_t processedSize = 0;
+        processedSize < length;
         processedSize += MAX_DATA_LENGTH
     ) {
         msg_t msg(
-            sendSeqnum_, 
-            data + processedSize, 
+            sendSeqnum_,
+            data + processedSize,
             min(length - processedSize, MAX_DATA_LENGTH)
         );
 
@@ -78,17 +78,26 @@ int rcs_t::send(const char *data, size_t length) {
                     acked = true;
                     ++sendSeqnum_;
                 }
+                else
+                {
+                    cout << "response: " << response.seqnum
+                         << "expected: " << sendSeqnum_ << endl;
+                }
+            }
+            else
+            {
+                // cout << "rawrecv failed" << endl;
             }
         } while (!acked);
-    }
+    } // end for
 
     return length;
 }
 
 int rcs_t::rawsend(const msg_t &msg) const {
     return ucpSendTo(
-        ucpSocket_, 
-        msg.serialize(), 
+        ucpSocket_,
+        msg.serialize(),
         static_cast<int>(msg.getTotalLength()),
         &endPoint_
     );
@@ -99,8 +108,8 @@ bool rcs_t::rawrecv(msg_t *out) const {
     sockaddr_in unused;
 
     int result = ucpRecvFrom(
-        ucpSocket_, 
-        static_cast<void*>(data), 
+        ucpSocket_,
+        static_cast<void*>(data),
         sizeof(msg_t),
         &unused
     );
@@ -116,14 +125,14 @@ bool rcs_t::rawrecv(msg_t *out) const {
 int rcs_t::recv(char *data, size_t maxLength) {
     while (!buffer_.hasEnoughData(maxLength)) {
         msg_t response;
+
         if (rawrecv(&response)) {
             if (response.seqnum == recvSeqnum_) {
                 cout << "< recv " << response.seqnum << endl;
                 buffer_.queueMessage(response);
+                rawsend(msg_t(recvSeqnum_, msg_t::MSG_ACK));
                 ++recvSeqnum_;
             }
-
-            rawsend(msg_t(recvSeqnum_, msg_t::MSG_ACK));
         }
     }
 
