@@ -14,6 +14,8 @@ int rcsBind(int sockfd, const struct sockaddr_in *addr) {
 }
 
 int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
+    sockaddr_in boundAddr = SOCKET.getBoundAddr();
+    memcpy( addr, &boundAddr, sizeof( boundAddr ) );
     return 0;
 }
 

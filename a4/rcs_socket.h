@@ -15,11 +15,14 @@ public:
     static void destroySocket(int id);
 
     rcs_t();
+    ~rcs_t();
 
     int bind(const sockaddr_in *addr);
     int connect(const sockaddr_in *addr);
     int send(const char *data, size_t length);
     int recv(char *data, size_t maxLength);
+
+    sockaddr_in getBoundAddr() const;
 
 private:
     int rawsend(const msg_t &msg) const;
@@ -27,6 +30,7 @@ private:
 
     int ucpSocket_;
     sockaddr_in endPoint_;
+    sockaddr_in boundAddr_;
     msg_buffer_t buffer_;
 
     uint16_t sendSeqnum_;
