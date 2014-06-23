@@ -118,7 +118,7 @@ bool rcs_t::rawrecv(msg_t *out) const {
 }
 
 int rcs_t::recv(char *data, size_t maxLength) {
-    if (!buffer_.hasEnoughData(maxLength)) {
+    if (buffer_.empty() || poll()) {
         while (true) {
             msg_t response;
             msg_t ack(recvSeqnum_ - 1, msg_t::ACK);
@@ -151,8 +151,7 @@ int rcs_t::recv(char *data, size_t maxLength) {
         ++recvSeqnum_;
     }
 
-    buffer_.read(data, maxLength);
-    return maxLength;
+    return buffer_.read(data, maxLength);
 }
 
 bool rcs_t::poll() const {
