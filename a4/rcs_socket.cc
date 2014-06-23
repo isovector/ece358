@@ -49,10 +49,7 @@ rcs_t::~rcs_t()
 }
 
 int rcs_t::bind(const sockaddr_in *addr) {
-    int result = ucpBind(ucpSocket_, addr);
-    if (result == 0)
-        memcpy(&boundAddr_, addr, sizeof(boundAddr_));
-    return result;
+    return ucpBind(ucpSocket_, addr);
 }
 
 int rcs_t::connect(const sockaddr_in *addr) {
@@ -145,9 +142,3 @@ int rcs_t::recv(char *data, size_t maxLength) {
     buffer_.read(data, maxLength);
     return maxLength;
 }
-
-sockaddr_in rcs_t::getBoundAddr() const
-{
-    return boundAddr_;
-}
-

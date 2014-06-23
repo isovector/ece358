@@ -30,7 +30,6 @@ private:
 
     int ucpSocket_;
     sockaddr_in endPoint_;
-    sockaddr_in boundAddr_;
     msg_buffer_t buffer_;
 
     uint16_t sendSeqnum_;
