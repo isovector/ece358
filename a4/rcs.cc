@@ -14,7 +14,7 @@ int rcsBind(int sockfd, const struct sockaddr_in *addr) {
 }
 
 int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
-    return ucpGetSockName(sockfd, addr);
+    return ucpGetSockName(SOCKET.getUcpSocket(), addr);
 }
 
 int rcsListen(int sockfd) {

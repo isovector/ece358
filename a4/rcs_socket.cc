@@ -154,6 +154,11 @@ int rcs_t::recv(char *data, size_t maxLength) {
     return buffer_.read(data, maxLength);
 }
 
+int rcs_t::getUcpSocket() const
+{
+    return ucpSocket_;
+}
+
 bool rcs_t::poll() const {
     fd_set rfds;
     struct timeval tv;

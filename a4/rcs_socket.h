@@ -21,7 +21,7 @@ public:
     int send(const char *data, size_t length);
     int recv(char *data, size_t maxLength);
 
-    sockaddr_in getBoundAddr() const;
+    int getUcpSocket() const;
 
 private:
     void acksend(const msg_t &msg) const;
