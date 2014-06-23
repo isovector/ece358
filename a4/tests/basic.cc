@@ -18,7 +18,7 @@ sockaddr_in getAddr(short port)
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(sockaddr_in));
     addr.sin_family = AF_INET;
-    
+
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addr.sin_port = htons(port);
 	return addr;
@@ -30,12 +30,12 @@ int newSocket(short port) {
     int result = rcsBind(socket, &addr);
     EXPECT(result >= 0);
 
-    return socket; 
+    return socket;
 }
 
 UNIT_TEST(BasicSendRecv) {
-    static const short SERVER_PORT = 6111;
-    static const short CLIENT_PORT = 6112;
+    static const short SERVER_PORT = 6141;
+    static const short CLIENT_PORT = 6142;
 
     sockaddr_in serverAddr = getAddr(SERVER_PORT);
     sockaddr_in clientAddr = getAddr(CLIENT_PORT);
@@ -67,5 +67,20 @@ UNIT_TEST(BasicSendRecv) {
 
     rcsClose(server);
     rcsClose(client);
+}
+
+UNIT_TEST(GetSocketName) {
+    static const short PORT = 6413;
+    sockaddr_in addr = getAddr(PORT);
+    int sock = newSocket(PORT);
+
+    EXPECT(sock >= 0);
+
+    sockaddr_in sock_addr;
+    int result = rcsGetSockName(sock, &sock_addr);
+
+    EXPECT(result == 0);
+    // cout << sock_addr.sin_port << endl;
+    // EXPECT(sock_addr.sin_port == 6413);
 }
 

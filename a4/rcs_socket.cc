@@ -36,8 +36,6 @@ void rcs_t::destroySocket(int id) {
     sSocketIdentifiers.erase(it);
 }
 
-
-
 rcs_t::rcs_t() :
     ucpSocket_(ucpSocket()),
     sendSeqnum_(0),
