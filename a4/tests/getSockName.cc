@@ -38,8 +38,8 @@ UNIT_TEST(GetSocketName) {
 
     struct sockaddr_in sock_addr;
     int result = rcsGetSockName(sock, &sock_addr);
-
     EXPECT(result == 0);
-    // cout << sock_addr.sin_port << endl;
-    // EXPECT(sock_addr.sin_port == 6413);
+
+    cout << sock_addr.sin_port << endl;
+    EXPECT(sock_addr.sin_port == 6413);
 }
