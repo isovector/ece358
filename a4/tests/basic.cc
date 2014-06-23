@@ -68,19 +68,3 @@ UNIT_TEST(BasicSendRecv) {
     rcsClose(server);
     rcsClose(client);
 }
-
-UNIT_TEST(GetSocketName) {
-    static const short PORT = 6413;
-    sockaddr_in addr = getAddr(PORT);
-    int sock = newSocket(PORT);
-
-    EXPECT(sock >= 0);
-
-    sockaddr_in sock_addr;
-    int result = rcsGetSockName(sock, &sock_addr);
-
-    EXPECT(result == 0);
-    // cout << sock_addr.sin_port << endl;
-    // EXPECT(sock_addr.sin_port == 6413);
-}
-
