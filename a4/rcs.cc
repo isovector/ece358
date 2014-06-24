@@ -7,51 +7,97 @@ extern int errno;
 
 #define SOCKET (rcs_t::getSocket(sockfd))
 
+//  Description:
+//    Used to allocated an RCS socket.
+//  Returns:
+//      int : socket descriptor (positive integer) on success
 int rcsSocket() {
     return rcs_t::makeSocket();
 }
 
+//  Description:
+//    Binds an RCS socket to the address structure
+//  Input:
+//    int sockfd : socket descriptor
+//    const struct sockaddr_in *addr : address structure to bind socket to
+//  Output:
+//    int : error code
 int rcsBind(int sockfd, const struct sockaddr_in *addr) {
     return SOCKET.bind(addr);
 }
 
+//  Description:
+//    Fills provided address structure with address that socket has been bound
+//  Input:
+//    int sockfd : socket descriptor
+//    struct sockaddr_in *addr : address structure to be filled with socket address info
+//  Output:
+//    int : error code
 int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
     return ucpGetSockName(SOCKET.getUcpSocket(), addr);
 }
 
+//  Description:
+//    Marks an RCS socket as listening for connection requests.
+//  Input:
+//    int sockfd : socket descriptor
+//  Output:
+//    int : error code
 int rcsListen(int sockfd) {
     ucpSetSockRecvTimeout(SOCKET.getUcpSocket(), 10);
     SOCKET.markAsListenerSocket();
     return 0;
 }
 
+//  Description:
+//    Accepts a connection request on the socket.
+//    This is a blocking call.
+//  Input:
+//    int sockfd : socket descriptor
+//    struct sockaddr_in *addr : filled with address of requester
+//  Output:
+//      int : socket descriptor of newly created socket for
+//             communicating with requester
 int rcsAccept(int sockfd, struct sockaddr_in *addr) {
     if(SOCKET.isListenerSocket()) {
         const int LENGTH_OF_SYN = 8;
         char buffer[LENGTH_OF_SYN];
-        int bytes_received = SOCKET.recv(buffer, LENGTH_OF_SYN);
+
+        int bytes_received = SOCKET.recv()
+
         buffer[bytes_received] = 0;
-        std::string syn = buffer;
+        std::string syn = "buffer";
         if(syn == "Connection Please") {
             return rcs_t::makeSocket();
         }
         else {
             return -1;
         }
-        // if message is valid, then SYN+ACK
-        // else fail or re-request
-    }
-    else {
-        return -1;
-    }
 
-    return 0;
+
+        return 0;
+    } else {
+        return 0;
+    }
 }
 
+//  Description:
+//    Connects a client to a server
+//  Input:
+//    int sockfd : socket descriptor (socket must be bound beforehand)
+//    const struct sockaddr_in *addr: address of the server
+//  Output:
+//    int : error code
 int rcsConnect(int sockfd, const struct sockaddr_in *addr) {
     return SOCKET.connect(addr);
 }
 
+//  Description:
+//    Blocking receive.
+//  Input:
+//    int sockfd : socket descriptor
+//    void *data : buffer that received data is put in to
+//    int size   : expected amount of data (in bytes)
 int rcsRecv(int sockfd, void *data, int size) {
     return SOCKET.recv(
         static_cast<char*>(data),
@@ -59,6 +105,12 @@ int rcsRecv(int sockfd, void *data, int size) {
     );
 }
 
+//  Description:
+//    Blocking send.
+//  Input:
+//    int sockfd : socket descriptor
+//    const void *data : buffer containing data to be sent
+//    int size         : amount of data to be sent (in bytes)
 int rcsSend(int sockfd, const void *data, int size) {
     return SOCKET.send(
         static_cast<const char*>(data),
@@ -66,6 +118,12 @@ int rcsSend(int sockfd, const void *data, int size) {
     );
 }
 
+//  Description:
+//    Closes an RCS socket
+//  Input:
+//    int sockfd : socket descriptor
+//  Output:
+//    int : error code
 int rcsClose(int sockfd) {
     rcs_t::destroySocket(sockfd);
     return 0;
