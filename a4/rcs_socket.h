@@ -22,6 +22,8 @@ public:
     int recv(char *data, size_t maxLength);
 
     int getUcpSocket() const;
+    void markAsListenerSocket();
+    bool isListenerSocket() const;
 
 private:
     void acksend(const msg_t &msg) const;
@@ -30,6 +32,7 @@ private:
     bool poll() const;
 
     int ucpSocket_;
+    bool isListenerSocket_;
     sockaddr_in endPoint_;
     msg_buffer_t buffer_;
 

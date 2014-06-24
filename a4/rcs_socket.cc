@@ -39,7 +39,8 @@ void rcs_t::destroySocket(int id) {
 rcs_t::rcs_t() :
     ucpSocket_(ucpSocket()),
     sendSeqnum_(0),
-    recvSeqnum_(0)
+    recvSeqnum_(0),
+    isListenerSocket_(false)
 {
     //TODO: figure out a sane value for the timeout
     ucpSetSockRecvTimeout(ucpSocket_, 10);
@@ -51,7 +52,6 @@ int rcs_t::bind(const sockaddr_in *addr) {
 
 int rcs_t::connect(const sockaddr_in *addr) {
     memcpy(&endPoint_, addr, sizeof(sockaddr_in));
-    //TODO: handshake here
     return 0;
 }
 
@@ -154,9 +154,16 @@ int rcs_t::recv(char *data, size_t maxLength) {
     return buffer_.read(data, maxLength);
 }
 
-int rcs_t::getUcpSocket() const
-{
+int rcs_t::getUcpSocket() const {
     return ucpSocket_;
+}
+
+void rcs_t::markAsListenerSocket() {
+    isListenerSocket_ = true;
+}
+
+bool rcs_t::isListenerSocket() const {
+    return isListenerSocket_;
 }
 
 bool rcs_t::poll() const {
