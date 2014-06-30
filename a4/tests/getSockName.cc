@@ -24,5 +24,6 @@ UNIT_TEST(GetSocketName) {
     EXPECT(result == 0);
 
     EXPECT(sock_addr.sin_addr.s_addr == inet_addr("127.0.0.1"));
+    // this should probably be ntohs on the sock_addr
     EXPECT(sock_addr.sin_port == ntohs(6413));
 }

@@ -34,11 +34,10 @@ int newSocket(short port) {
 }
 
 UNIT_TEST(BasicSendRecv) {
-    static const short SERVER_PORT = 6141;
-    static const short CLIENT_PORT = 6142;
+    static const short SERVER_PORT = 6112;
+    static const short CLIENT_PORT = 6111;
 
     sockaddr_in serverAddr = getAddr(SERVER_PORT);
-    sockaddr_in clientAddr = getAddr(CLIENT_PORT);
 
     int server = newSocket(SERVER_PORT);
     int client = newSocket(CLIENT_PORT);
@@ -49,17 +48,17 @@ UNIT_TEST(BasicSendRecv) {
 
     EXPECT(0 == rcsListen(server));
 
-    //TODO: in the future this should listen or something
-    EXPECT(0 == rcsConnect(client, &serverAddr));
-    EXPECT(0 == rcsConnect(server, &clientAddr));
-
     string data = "the quick brown fox jumps OVER the lazy dawgggg";
     int len = (int)data.length();
 
     if (!fork()) {
-        EXPECT_N(len, rcsSend(server, data.c_str(), len));
+        int channel = rcsAccept(server, NULL);
+        EXPECT_N(len, rcsSend(channel, data.c_str(), len));
         _exit(0);
     } else {
+        EXPECT(0 == rcsConnect(client, &serverAddr));
+        cout << "connected!" << endl;
+
         char buffer[1024];
         EXPECT_N(len, rcsRecv(client, buffer, len));
         EXPECT(data == buffer);

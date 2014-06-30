@@ -17,19 +17,22 @@ public:
     rcs_t();
 
     int bind(const sockaddr_in *addr);
+    void listen();
+    int accept(sockaddr_in *addr);
     int connect(const sockaddr_in *addr);
     int send(const char *data, size_t length);
     int recv(char *data, size_t maxLength);
 
-    int getUcpSocket() const;
-    void markAsListenerSocket();
-    bool isListenerSocket() const;
+    int getSockName(sockaddr_in *addr) const;
 
 private:
-    void acksend(const msg_t &msg) const;
+    void acksend(const msg_t &msg, msg_t *resp = NULL);
     int rawsend(const msg_t &msg) const;
-    bool rawrecv(msg_t *out) const;
-    bool poll() const;
+    bool rawrecv(msg_t *out);
+        
+    void finalizeRecv();
+    void setEndpoint(const sockaddr_in *addr);
+    void setTimeout(size_t newTimeout) const;
 
     int ucpSocket_;
     bool isListenerSocket_;
@@ -38,5 +41,9 @@ private:
 
     uint16_t sendSeqnum_;
     uint16_t recvSeqnum_;
+    short numAccepted_;
+
+    bool hasEndpoint_;
+    sockaddr_in fromEndpoint_;
 };
 

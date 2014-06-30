@@ -11,7 +11,5 @@ int ucpGetSockName(int sockfd, struct sockaddr_in *addr);
 int ucpSetSockRecvTimeout(int sockfd, int milliSecs);
 int ucpSendTo(int sockfd, const void *buf, int len, const struct sockaddr_in *to);
 ssize_t ucpRecvFrom(int sockfd, void *buf, int len, struct sockaddr_in *from);
-int ucpSelect(int nfds, fd_set *readfds, fd_set *writefds,
-	      fd_set *exceptfds, struct timeval *timeout);
 int ucpClose(int sockfd);
 

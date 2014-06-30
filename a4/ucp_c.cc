@@ -107,12 +107,6 @@ ssize_t ucpRecvFrom(int sockfd, void *buf, int len, struct sockaddr_in *from)
 			    &addrlen));
 }
 
-int ucpSelect(int nfds, fd_set *readfds, fd_set *writefds,
-	      fd_set *exceptfds, struct timeval *timeout) {
-
-    return(select(nfds, readfds, writefds, exceptfds, timeout));
-}
-
 int ucpClose(int sockfd)
 {
     return(close(sockfd));

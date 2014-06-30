@@ -6,6 +6,9 @@
 #include <sys/select.h>
 using namespace std;
 
+static const size_t RECV_TIMEOUT = 10;
+static const size_t PROTOCOL_TIMEOUT = 100;
+
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
 //  Description:
@@ -50,9 +53,11 @@ void rcs_t::destroySocket(int id) {
 
 rcs_t::rcs_t() :
     ucpSocket_(ucpSocket()),
+    isListenerSocket_(false),
     sendSeqnum_(0),
     recvSeqnum_(0),
-    isListenerSocket_(false)
+    numAccepted_(0),
+    hasEndpoint_(false)
 {
     //TODO: figure out a sane value for the timeout
     ucpSetSockRecvTimeout(ucpSocket_, 10);
@@ -69,6 +74,48 @@ int rcs_t::bind(const sockaddr_in *addr) {
     return ucpBind(ucpSocket_, addr);
 }
 
+int rcs_t::getSockName(sockaddr_in *addr) const {
+    return ucpGetSockName(ucpSocket_, addr);
+}
+
+void rcs_t::listen() {
+    isListenerSocket_ = true;
+}
+
+int rcs_t::accept(sockaddr_in *addr) {
+    if (!isListenerSocket_) {
+        return -1;
+    }
+
+    sockaddr_in me;
+    getSockName(&me);
+    ++numAccepted_;
+    //TODO: come up with a better way of generating these
+    short newPort = ntohs(me.sin_port) + numAccepted_;
+    me.sin_port = htons(newPort);
+
+
+    int sockfd = makeSocket();
+    rcs_t &socket = getSocket(sockfd);
+    socket.bind(&me);
+
+    char buffer[32];
+    setTimeout(0);
+    recv(buffer, 32);
+
+    socket.setEndpoint(&fromEndpoint_);
+    send(
+        static_cast<char*>(static_cast<void*>(&newPort)),
+        sizeof(short)
+    );
+
+    if (addr) {
+        memcpy(addr, &fromEndpoint_, sizeof(sockaddr_in));
+    }
+
+    return sockfd;
+}
+
 //  Description:
 //    Implementation of rcsConnect
 //  Input:
@@ -76,8 +123,28 @@ int rcs_t::bind(const sockaddr_in *addr) {
 //  Output:
 //    int : error code
 int rcs_t::connect(const sockaddr_in *addr) {
-    memcpy(&endPoint_, addr, sizeof(sockaddr_in));
+    setEndpoint(addr);
+
+    char connection[16] = "rcs connect";
+    send(connection, strlen(connection));
+
+    recv(connection, 16);
+
+    // update our port to what the host told us to use
+    endPoint_.sin_port = htons(
+        *static_cast<short*>(
+            static_cast<void*>(connection)
+        )
+    );
+
+    setEndpoint(&endPoint_);
+
     return 0;
+}
+
+void rcs_t::setEndpoint(const sockaddr_in *addr) {
+    memcpy(&endPoint_, addr, sizeof(sockaddr_in));
+    hasEndpoint_ = true;
 }
 
 //  Description:
@@ -88,6 +155,8 @@ int rcs_t::connect(const sockaddr_in *addr) {
 //  Output:
 //    int : the number of bytes sent
 int rcs_t::send(const char *data, size_t length) {
+    sendSeqnum_ = 0;
+
     for (
         size_t processedSize = 0;
         processedSize < length;
@@ -113,8 +182,9 @@ int rcs_t::send(const char *data, size_t length) {
 //    Used by rcs_t::send to send a message until it has been ACKed
 //  Input:
 //    const msg_t &msg : the message to be sent
-void rcs_t::acksend(const msg_t &msg) const {
-    bool acked = false;
+void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
+    msg_t response;
+
     do {
         rawsend(msg);
 
@@ -122,7 +192,11 @@ void rcs_t::acksend(const msg_t &msg) const {
         if (rawrecv(&response) && response.seqnum == msg.seqnum) {
             break;
         }
-    } while (!acked);
+    } while (true);
+
+    if (resp) {
+        memcpy(resp, &response, sizeof(msg_t));
+    }
 }
 
 //  Description:
@@ -146,16 +220,19 @@ int rcs_t::rawsend(const msg_t &msg) const {
 //    msg_t *out : filled with the message obtained by ucpRecvFrom
 //  Output:
 //    bool : is the retrieved message valid and of the expected size?
-bool rcs_t::rawrecv(msg_t *out) const {
+bool rcs_t::rawrecv(msg_t *out) {
     char data[sizeof(msg_t)];
-    sockaddr_in unused;
 
     int result = ucpRecvFrom(
         ucpSocket_,
         static_cast<void*>(data),
         sizeof(msg_t),
-        &unused
+        &fromEndpoint_
     );
+
+    if (!hasEndpoint_) {
+        setEndpoint(&fromEndpoint_);
+    }
 
     if (result == EWOULDBLOCK || result == EAGAIN) {
         return false;
@@ -173,7 +250,9 @@ bool rcs_t::rawrecv(msg_t *out) const {
 //  Output:
 //    int : number of bytes read
 int rcs_t::recv(char *data, size_t maxLength) {
-    if (buffer_.empty() || poll()) {
+    recvSeqnum_ = 0;
+
+    if (buffer_.empty()) {
         while (true) {
             msg_t response;
             msg_t ack(recvSeqnum_ - 1, msg_t::ACK);
@@ -192,56 +271,27 @@ int rcs_t::recv(char *data, size_t maxLength) {
             }
         }
 
-        while (poll()) {
-            msg_t response;
-            if (rawrecv(&response)) {
-                if (response.hasFlag(msg_t::EOS)) {
-                    rawsend(msg_t(response.seqnum, msg_t::ACK));
-                } else {
-                    break;
-                }
-            }
-        }
-
+        finalizeRecv();
         ++recvSeqnum_;
     }
 
     return buffer_.read(data, maxLength);
 }
 
-//  Description:
-//    Getter for an RCS socket's underlying UCP socket
-//  Output:
-//    int : file descriptor of the UCP socket
-int rcs_t::getUcpSocket() const {
-    return ucpSocket_;
+void rcs_t::finalizeRecv() {
+    setTimeout(PROTOCOL_TIMEOUT);
+    msg_t response;
+    while (rawrecv(&response)) {
+        if (!response.hasFlag(msg_t::EOS)) {
+            break;
+        }
+
+        rawsend(msg_t(response.seqnum, msg_t::ACK));
+    }
+    setTimeout(RECV_TIMEOUT);
 }
 
-//  Description:
-//    Marks an RCS socket as a listener socket
-//    (One that accepts connection requests)
-void rcs_t::markAsListenerSocket() {
-    isListenerSocket_ = true;
-}
-
-//  Description:
-//    Getter for isListenerSocket_ marker
-//  Output:
-//    bool : is this socket a listener socket?
-bool rcs_t::isListenerSocket() const {
-    return isListenerSocket_;
-}
-
-bool rcs_t::poll() const {
-    fd_set rfds;
-    struct timeval tv;
-
-    FD_ZERO(&rfds);
-    FD_SET(ucpSocket_, &rfds);
-
-    tv.tv_sec = 0;
-    tv.tv_usec = 100000;
-
-    return ucpSelect(1, &rfds, NULL, NULL, &tv) > 0;
+void rcs_t::setTimeout(size_t newTimeout) const {
+    ucpSetSockRecvTimeout(ucpSocket_, static_cast<int>(newTimeout));
 }
 
