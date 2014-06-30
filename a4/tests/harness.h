@@ -1,5 +1,11 @@
 #pragma once
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+
 #define EXPECT(expr) { if (!(expr)) fail_test(#expr); }
 #define EXPECT_N(n, expr) { int ___value = expr; if (___value != n) fail_test_n(#expr, ___value, n); }
 
@@ -9,7 +15,7 @@
         __FILE__ " >> " #name, \
         &__unit_test__##name); \
     void __unit_test__##name()
-        
+
 
 #include <map>
 

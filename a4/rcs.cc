@@ -1,5 +1,6 @@
 #include "rcs.h"
 #include "rcs_socket.h"
+#include <iostream>
 
 #include <string>
 
