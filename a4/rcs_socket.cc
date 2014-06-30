@@ -148,13 +148,12 @@ int rcs_t::rawsend(const msg_t &msg) const {
 //    bool : is the retrieved message valid and of the expected size?
 bool rcs_t::rawrecv(msg_t *out) const {
     char data[sizeof(msg_t)];
-    sockaddr_in unused;
 
     int result = ucpRecvFrom(
         ucpSocket_,
         static_cast<void*>(data),
         sizeof(msg_t),
-        &unused
+        (struct sockaddr_in *)&endPoint_
     );
 
     if (result == EWOULDBLOCK || result == EAGAIN) {
