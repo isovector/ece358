@@ -15,7 +15,6 @@ UNIT_TEST(Listener) {
 	static const short CLIENT_PORT = 9852;
 
 	sockaddr_in serverAddr = getAddr(SERVER_PORT);
-	sockaddr_in clientAddr = getAddr(CLIENT_PORT);
 
 	int server = newSocket(SERVER_PORT);
 	int client = newSocket(CLIENT_PORT);
