@@ -31,26 +31,20 @@ UNIT_TEST(MultipleConnections) {
 
 	EXPECT(0 == rcsListen(server));
 
-	EXPECT(0 == rcsConnect(client1, &serverAddr));
-	EXPECT(0 == rcsConnect(client2, &serverAddr));
-
     string data = "the quick brown fox jumps OVER the lazy dawgggg";
-    int hand_len = (int)data.length();
-    string handshake = "Connection Please";
-    int data_len = (int)handshake.length();
-
+    int data_len = data.length();
 
 	if(!fork()) {
 
 		// Two clients sending data
 		if (!fork())
 		{
-			EXPECT_N(hand_len, rcsSend(client1, handshake.c_str(), hand_len ));
-			EXPECT_N(data_len, rcsSend(server, data.c_str(), data_len));
+			EXPECT(0 == rcsConnect(client1, &serverAddr));
+			EXPECT_N(data_len, rcsSend(client1, data.c_str(), data_len));
 			_exit(0);
 		} else {
-			EXPECT_N(hand_len, rcsSend(client2, handshake.c_str(), hand_len ));
-			EXPECT_N(data_len, rcsSend(server, data.c_str(), data_len));
+			EXPECT(0 == rcsConnect(client2, &serverAddr));
+			EXPECT_N(data_len, rcsSend(client2, data.c_str(), data_len));
 			_exit(0);
 		}
 
@@ -70,7 +64,7 @@ UNIT_TEST(MultipleConnections) {
 		}
 
 		int messages_received = 0,
-			messages_expected = 2;
+			messages_expected = 1;
 		while (messages_received < messages_expected) {
 			// read from clients
 			for (int i = 0; i < clients.size(); i++) {
