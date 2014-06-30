@@ -5,10 +5,6 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 using namespace std;
 
 extern int newSocket(short port);
