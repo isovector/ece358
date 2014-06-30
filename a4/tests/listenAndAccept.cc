@@ -25,18 +25,14 @@ UNIT_TEST(Listener) {
 
 	EXPECT(0 == rcsListen(server));
 
-	EXPECT(0 == rcsConnect(client, &serverAddr));
-
 	if(!fork()) {
 		// client
-		string handshake = "Connection Please";
-		int len = (int)handshake.length();
-		EXPECT_N(len, rcsSend(client, handshake.c_str(), len ));
+		EXPECT(0 == rcsConnect(client, &serverAddr));
 		_exit(0);
 	} else {
 		// server
 		sockaddr_in *receivedFrom;
-		EXPECT( -1 != rcsAccept(server, receivedFrom));
+		EXPECT( -1 != rcsAccept(server, NULL));
 	}
 }
 
