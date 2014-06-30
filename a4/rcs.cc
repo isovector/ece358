@@ -1,5 +1,6 @@
 #include "rcs.h"
 #include "rcs_socket.h"
+#include <iostream>
 
 #include <string>
 
@@ -60,13 +61,13 @@ int rcsListen(int sockfd) {
 //             communicating with requester
 int rcsAccept(int sockfd, struct sockaddr_in *addr) {
     if(SOCKET.isListenerSocket()) {
-        const int LENGTH_OF_SYN = 8;
+        const int LENGTH_OF_SYN = 17;
         char buffer[LENGTH_OF_SYN];
 
         int bytes_received = SOCKET.recv(buffer, LENGTH_OF_SYN);
 
         buffer[bytes_received] = 0;
-        std::string syn = "buffer";
+        std::string syn = buffer;
         if(syn == "Connection Please") {
             return rcs_t::makeSocket();
         }
