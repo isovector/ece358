@@ -179,9 +179,10 @@ int rcs_t::send(const char *data, size_t length) {
 }
 
 //  Description:
-//    Used by rcs_t::send to send a message until it has been ACKed
+//    Sends a message until it has been ACKED
 //  Input:
 //    const msg_t &msg : the message to be sent
+//    msg_t *resp : filled with the ACK; NULL by default
 void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
     msg_t response;
 
