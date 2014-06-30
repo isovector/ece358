@@ -34,5 +34,9 @@ UNIT_TEST(Listener) {
 		sockaddr_in *receivedFrom;
 		EXPECT( -1 != rcsAccept(server, NULL));
 	}
+
+	rcsClose(server);
+	rcsClose(client);
+
 }
 
