@@ -95,15 +95,15 @@ int rcs_t::accept(sockaddr_in *addr) {
     me.sin_port = htons(newPort);
 
 
-    int sockfd = makeSocket();
-    rcs_t &socket = getSocket(sockfd);
-    socket.bind(&me);
+    int childSockfd = makeSocket();
+    rcs_t &childSocket = getSocket(childSockfd);
+    childSocket.bind(&me);
 
     char buffer[32];
     setTimeout(0);
     recv(buffer, 32);
 
-    socket.setEndpoint(&fromEndpoint_);
+    childSocket.setEndpoint(&fromEndpoint_);
     send(
         static_cast<char*>(static_cast<void*>(&newPort)),
         sizeof(short)
@@ -113,7 +113,7 @@ int rcs_t::accept(sockaddr_in *addr) {
         memcpy(addr, &fromEndpoint_, sizeof(sockaddr_in));
     }
 
-    return sockfd;
+    return childSockfd;
 }
 
 //  Description:
