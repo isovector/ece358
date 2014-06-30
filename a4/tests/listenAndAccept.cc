@@ -31,7 +31,6 @@ UNIT_TEST(Listener) {
 	EXPECT(0 == rcsListen(server));
 
 	EXPECT(0 == rcsConnect(client, &serverAddr));
-	// EXPECT(0 == rcsConnect(server, &clientAddr));
 
 	if(!fork()) {
 		// client
