@@ -16,7 +16,7 @@ TEST_OBJECTS = ${UNIT_TESTS} ${COMMON_OBJECTS}
 .PHONY : test clean
 
 test : ${TEST_OBJECTS}
-	@ ${CXX} ${CXXFLAGS} $^ -o test && ./test ; rm test; pkill test;
+	@ pkill test; ${CXX} ${CXXFLAGS} $^ -o test && ./test ; rm test;
 
 clean :
 	rm -f *.d *.o **/*.d **/*.o ${EXECS}

@@ -6,8 +6,8 @@
 #include <sys/select.h>
 using namespace std;
 
-static const size_t     RECV_TIMEOUT = 1000;
-static const size_t PROTOCOL_TIMEOUT = 2000;
+static const size_t     RECV_TIMEOUT = 10;
+static const size_t PROTOCOL_TIMEOUT = 100;
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
@@ -138,8 +138,6 @@ int rcs_t::connect(const sockaddr_in *addr) {
         )
     );
 
-    cout << "was given " << endPoint_.sin_port << endl;
-
     setEndpoint(&endPoint_);
 
     return 0;
@@ -214,7 +212,7 @@ void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
 //  Output:
 //    int : error code
 int rcs_t::rawsend(const msg_t &msg) const {
-    cout << ">> " << ucpSocket_ << ":" << msg << endl;
+    //cout << ">> " << ucpSocket_ << ":" << msg << endl;
     return ucpSendTo(
         ucpSocket_,
         msg.serialize(),
@@ -233,16 +231,15 @@ bool rcs_t::lowrecv(msg_t *out) {
 int rcs_t::rawrecv(msg_t *out) {
     char data[sizeof(msg_t)];
 
-    sockaddr_in unused;
     int result = ucpRecvFrom(
         ucpSocket_,
         static_cast<void*>(data),
         sizeof(msg_t),
-        &unused
+        &fromEndpoint_
     );
 
     if (!hasEndpoint_) {
-        setEndpoint(&unused);
+        setEndpoint(&fromEndpoint_);
     }
 
     if (result < 0) {
@@ -250,7 +247,7 @@ int rcs_t::rawrecv(msg_t *out) {
     }
 
     *out = msg_t::deserialize(data);
-    cout << "\t<< " << ucpSocket_ << ":" << *out << endl << endl;
+    //cout << "\t<< " << ucpSocket_ << ":" << *out << endl << endl;
     return result;
 }
 

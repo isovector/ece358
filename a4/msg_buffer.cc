@@ -30,16 +30,6 @@ bool msg_buffer_t::empty() const {
 }
 
 //  Description:
-//    Checks if the buffer has at least N bytes
-//  Input:
-//    int numBytes : value of N
-//  Output:
-//    bool : does the buffer have at least N bytes?
-bool msg_buffer_t::hasAtLeast(int numBytes) const {
-    return totalSize_ >= numBytes;
-}
-
-//  Description:
 //    Read bytes out of the buffer.
 //  Input:
 //    char *dest    : buffer to be filled with data

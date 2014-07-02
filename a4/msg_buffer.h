@@ -9,7 +9,6 @@ public:
 
     void queueMessage(const msg_t &msg);
     bool empty() const;
-    bool hasAtLeast(int numBytes) const;
     size_t read(char *dest, size_t length);
 
 private:
