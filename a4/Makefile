@@ -2,7 +2,7 @@ CXX = g++
 
 CXXFLAGS := ${TCPFLAG} -g -Wall -MMD
 
-EXECS = 
+EXECS =
 
 # Object files
 COMMON_OBJECTS = $(addsuffix .o, ucp_c rcs rcs_socket message msg_buffer)
@@ -16,7 +16,7 @@ TEST_OBJECTS = ${UNIT_TESTS} ${COMMON_OBJECTS}
 .PHONY : test clean
 
 test : ${TEST_OBJECTS}
-	@ ${CXX} ${CXXFLAGS} $^ -o test && ./test ; rm test
+	@ ${CXX} ${CXXFLAGS} $^ -o test && ./test ; rm test; pkill test;
 
 clean :
 	rm -f *.d *.o **/*.d **/*.o ${EXECS}

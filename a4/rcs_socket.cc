@@ -96,15 +96,15 @@ int rcs_t::accept(sockaddr_in *addr) {
     me.sin_port = htons(newPort);
 
 
-    int sockfd = makeSocket();
-    rcs_t &socket = getSocket(sockfd);
-    socket.bind(&me);
+    int childSockfd = makeSocket();
+    rcs_t &childSocket = getSocket(childSockfd);
+    childSocket.bind(&me);
 
     char buffer[32];
     setTimeout(0);
     recv(buffer, 32);
 
-    socket.setEndpoint(&fromEndpoint_);
+    childSocket.setEndpoint(&fromEndpoint_);
     send(
         static_cast<char*>(static_cast<void*>(&newPort)),
         sizeof(short)
@@ -114,7 +114,7 @@ int rcs_t::accept(sockaddr_in *addr) {
         memcpy(addr, &fromEndpoint_, sizeof(sockaddr_in));
     }
 
-    return sockfd;
+    return childSockfd;
 }
 
 //  Description:
@@ -184,9 +184,10 @@ int rcs_t::send(const char *data, size_t length) {
 }
 
 //  Description:
-//    Used by rcs_t::send to send a message until it has been ACKed
+//    Sends a message until it has been ACKED
 //  Input:
 //    const msg_t &msg : the message to be sent
+//    msg_t *resp : filled with the ACK; NULL by default
 void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
     msg_t response;
 
