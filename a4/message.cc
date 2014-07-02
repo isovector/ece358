@@ -1,8 +1,9 @@
 #include "message.h"
 #include <assert.h>
 #include <string.h>
+using namespace std;
 
-const uint32_t MSG_CHECKSUM = 0xDEADBEEF;
+const uint32_t MSG_CHECKSUM = 16;
 
 msg_t::msg_t() :
     checksum(0),
@@ -13,7 +14,7 @@ msg_t::msg_t() :
 }
 
 msg_t::msg_t(uint16_t seqnum, flags_t flags) :
-    checksum(MSG_CHECKSUM),
+    checksum(0),
     seqnum(seqnum),
     length(0),
     flags(flags)
@@ -21,7 +22,7 @@ msg_t::msg_t(uint16_t seqnum, flags_t flags) :
 }
 
 msg_t::msg_t(uint16_t seqnum, const char *srcData, size_t len, flags_t flags) :
-    checksum(MSG_CHECKSUM),
+    checksum(MSG_CHECKSUM * len),
     seqnum(seqnum),
     length(len),
     flags(flags)
@@ -31,7 +32,8 @@ msg_t::msg_t(uint16_t seqnum, const char *srcData, size_t len, flags_t flags) :
 }
 
 bool msg_t::valid() const {
-    return checksum == MSG_CHECKSUM;
+    return checksum == MSG_CHECKSUM  * length
+        && length <= MAX_DATA_LENGTH;
 }
 
 bool msg_t::hasFlag(flags_t mask) const {
@@ -52,5 +54,24 @@ const msg_t msg_t::deserialize(const char *buffer) {
 
 msg_t::flags_t operator|(msg_t::flags_t a, msg_t::flags_t b) {
     return msg_t::flags_t(int(a) | int(b));
+}
+
+std::ostream &operator<<(std::ostream &out, const msg_t &msg) {
+    if (!msg.valid()) {
+        out << "msg_t[BAD]";
+        return out;
+    }
+
+    char buffer[MAX_DATA_LENGTH];
+    memcpy(buffer, msg.data, msg.length);
+    buffer[msg.length] = 0; 
+
+    out << "msg_t[" << msg.seqnum << "] "
+        << (msg.flags == msg_t::ACK ? "ack/" :
+            msg.flags == msg_t::EOS ? "eos/" :
+            msg.flags == msg_t::FIN ? "fin/" : "")
+        << msg.length << ": " <<  buffer;
+
+    return out;
 }
 

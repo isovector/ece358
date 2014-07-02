@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <cstddef>
+#include <iostream>
 
 const size_t MAX_DATA_LENGTH = 32;
 
@@ -9,10 +10,9 @@ class msg_t {
 public: 
     enum flags_t {
         NONE     = 0,
-        EST      = 1 << 0, // establish connection
-        ACK      = 1 << 1, // ack
-        EOS      = 1 << 2, // end of send()
-        FIN      = 1 << 3  // close channel
+        ACK      = 1 << 0, // ack
+        EOS      = 1 << 1, // end of send()
+        FIN      = 1 << 2  // close channel
     };
 
     msg_t();
@@ -34,4 +34,5 @@ public:
 };
 
 msg_t::flags_t operator|(msg_t::flags_t a, msg_t::flags_t b);
+std::ostream &operator<<(std::ostream &out, const msg_t &msg);
 

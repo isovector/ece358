@@ -28,7 +28,8 @@ public:
 private:
     void acksend(const msg_t &msg, msg_t *resp = NULL);
     int rawsend(const msg_t &msg) const;
-    bool rawrecv(msg_t *out);
+    bool lowrecv(msg_t *out);
+    int rawrecv(msg_t *out);
         
     void finalizeRecv();
     void setEndpoint(const sockaddr_in *addr);

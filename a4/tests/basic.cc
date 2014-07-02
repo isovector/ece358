@@ -49,11 +49,12 @@ UNIT_TEST(BasicSendRecv) {
 
     if (!fork()) {
         int channel = rcsAccept(server, NULL);
+        cout << "------ ACCEPTED" << endl;
         EXPECT_N(len, rcsSend(channel, data.c_str(), len));
         _exit(0);
     } else {
         EXPECT(0 == rcsConnect(client, &serverAddr));
-        cout << "connected!" << endl;
+        cout << "------ CONNECTED" << endl;
 
         char buffer[1024];
         EXPECT_N(len, rcsRecv(client, buffer, len));
