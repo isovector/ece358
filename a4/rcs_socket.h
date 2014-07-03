@@ -31,7 +31,7 @@ private:
     bool lowrecv(msg_t *out);
     int rawrecv(msg_t *out);
         
-    void finalizeRecv();
+    void finalizeRecv(const msg_t &msg);
     void setEndpoint(const sockaddr_in *addr);
     void setTimeout(size_t newTimeout) const;
 

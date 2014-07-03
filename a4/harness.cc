@@ -36,6 +36,7 @@ void fail_test_n(const char *msg, int val, int n) {
 }
 
 int main(int argc, char *argv[]) {
+    srand(0);
     tests_t &regTests = UnitTestRegistrar::registeredTests;
 
     vector<const char*> failedTests;

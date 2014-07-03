@@ -4,12 +4,31 @@
 #include <algorithm>
 #include <errno.h>
 #include <sys/select.h>
+#include <assert.h>
+#include <unistd.h>
 using namespace std;
 
 static const size_t     RECV_TIMEOUT = 10;
-static const size_t PROTOCOL_TIMEOUT = 100;
+static const size_t PROTOCOL_TIMEOUT = 5000;
+
+#define INSPECT_PACKETS 1
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
+
+
+void inspect_packet(int socket, bool send, const msg_t &msg) {
+    if (send) {
+        cout << ">>";
+    } else {
+        cout << "\t<<";
+    }
+
+    cout << " " << socket << ":" << msg << "\n";
+
+    if (!send) { 
+        cout << "\n";
+    }
+}
 
 //  Description:
 //    Static method for retrieving RCS sockets.
@@ -60,8 +79,7 @@ rcs_t::rcs_t() :
     numAccepted_(0),
     hasEndpoint_(false)
 {
-    //TODO: figure out a sane value for the timeout
-    ucpSetSockRecvTimeout(ucpSocket_, RECV_TIMEOUT);
+    setTimeout(RECV_TIMEOUT);
 }
 
 //  Description:
@@ -173,8 +191,9 @@ int rcs_t::send(const char *data, size_t length) {
         ++sendSeqnum_;
     }
 
-    msg_t msg(sendSeqnum_, msg_t::EOS);
-    acksend(msg);
+    acksend(msg_t(sendSeqnum_, msg_t::EOS));
+
+    usleep(PROTOCOL_TIMEOUT * 1000);
 
     cout << "--- DONE SEND ON " << ucpSocket_ << endl;
 
@@ -196,6 +215,8 @@ void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
         if (lowrecv(&response)){
             if (response.seqnum == msg.seqnum) {
                 break;
+            } else {
+                cout << "wat?" << endl;
             }
         }
     } while (true);
@@ -212,7 +233,12 @@ void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
 //  Output:
 //    int : error code
 int rcs_t::rawsend(const msg_t &msg) const {
-    //cout << ">> " << ucpSocket_ << ":" << msg << endl;
+#if INSPECT_PACKETS
+    inspect_packet(ucpSocket_, true, msg);
+#endif
+
+    assert(!(msg.length == 0 && msg.flags == msg_t::NONE));
+
     return ucpSendTo(
         ucpSocket_,
         msg.serialize(),
@@ -229,7 +255,7 @@ bool rcs_t::lowrecv(msg_t *out) {
 
 // recv something
 int rcs_t::rawrecv(msg_t *out) {
-    char data[sizeof(msg_t)];
+    char data[sizeof(msg_t)] = {0};
 
     int result = ucpRecvFrom(
         ucpSocket_,
@@ -242,12 +268,19 @@ int rcs_t::rawrecv(msg_t *out) {
         setEndpoint(&fromEndpoint_);
     }
 
-    if (result < 0) {
-        return 0;
+    if (result <= 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return 0;
+        }
+
+        return 1;
     }
 
     *out = msg_t::deserialize(data);
-    //cout << "\t<< " << ucpSocket_ << ":" << *out << endl << endl;
+#if INSPECT_PACKETS
+    inspect_packet(ucpSocket_, false, *out);
+#endif
+
     return result;
 }
 
@@ -270,30 +303,31 @@ int rcs_t::recv(char *data, size_t maxLength) {
                     buffer_.queueMessage(response);
                     ack.seqnum = recvSeqnum_;
                     ++recvSeqnum_;
-                }
+                } 
 
                 rawsend(ack);
                 if (response.hasFlag(msg_t::EOS)) {
-                    finalizeRecv();
+                    finalizeRecv(ack);
                     break;
                 }
             }
         }
     } while (buffer_.empty());
 
-    cout << "--- DONE RECV ON " << ucpSocket_ << endl;
+    cout << "--- DONE RECV ON " << ucpSocket_ << "   " << maxLength <<  endl;
     return buffer_.read(data, maxLength);
 }
 
-void rcs_t::finalizeRecv() {
+void rcs_t::finalizeRecv(const msg_t &ack) {
     setTimeout(PROTOCOL_TIMEOUT);
     msg_t response;
     while (rawrecv(&response)) {
-        if (!response.hasFlag(msg_t::EOS)) {
+        if (response.valid() && response.seqnum == 0 && response.length != 0) {
+            cout << "wat why dead" << endl;
             break;
         }
 
-        rawsend(msg_t(response.seqnum, msg_t::ACK));
+        rawsend(ack);
     }
     setTimeout(RECV_TIMEOUT);
 }

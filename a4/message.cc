@@ -14,7 +14,7 @@ msg_t::msg_t() :
 }
 
 msg_t::msg_t(uint16_t seqnum, flags_t flags) :
-    checksum(0),
+    checksum(MSG_CHECKSUM),
     seqnum(seqnum),
     length(0),
     flags(flags)
@@ -22,7 +22,7 @@ msg_t::msg_t(uint16_t seqnum, flags_t flags) :
 }
 
 msg_t::msg_t(uint16_t seqnum, const char *srcData, size_t len, flags_t flags) :
-    checksum(MSG_CHECKSUM * len),
+    checksum(MSG_CHECKSUM * (len + 1)),
     seqnum(seqnum),
     length(len),
     flags(flags)
@@ -32,7 +32,7 @@ msg_t::msg_t(uint16_t seqnum, const char *srcData, size_t len, flags_t flags) :
 }
 
 bool msg_t::valid() const {
-    return checksum == MSG_CHECKSUM  * length
+    return checksum == MSG_CHECKSUM  * (length + 1)
         && length <= MAX_DATA_LENGTH;
 }
 
