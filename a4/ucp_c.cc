@@ -20,8 +20,6 @@
 extern int errno;
 
 unsigned int get_rand() {
-    return rand();
-
     unsigned int ret = 0;
     int fd = open("/dev/urandom", O_RDONLY);
 
@@ -64,7 +62,7 @@ int ucpSetSockRecvTimeout(int sockfd, int milliSecs)
 
 int ucpSendTo(int sockfd, const void *buf, int len, const struct sockaddr_in *to)
 {
-    const int pDoEvil = 0; /* Chance in 100 that we will do evil */
+    const int pDoEvil = 90; /* Chance in 100 that we will do evil */
 
     if(len <= 0) {
 	errno = EINVAL; /* Invalid arg */

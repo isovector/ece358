@@ -9,7 +9,7 @@
 using namespace std;
 
 static const size_t     RECV_TIMEOUT = 10;
-static const size_t PROTOCOL_TIMEOUT = 5000;
+static const size_t PROTOCOL_TIMEOUT = 1000;
 
 #define INSPECT_PACKETS 1
 
@@ -193,11 +193,23 @@ int rcs_t::send(const char *data, size_t length) {
 
     acksend(msg_t(sendSeqnum_, msg_t::EOS));
 
-    usleep(PROTOCOL_TIMEOUT * 1000);
-
-    cout << "--- DONE SEND ON " << ucpSocket_ << endl;
-
     return length;
+}
+
+void rcs_t::finalizeSend(const msg_t &msg) {
+    msg_t response;
+
+    rawsend(msg);
+
+    setTimeout(PROTOCOL_TIMEOUT);
+    while (rawrecv(&response)) {
+        if (response.valid() && response.seqnum == msg.seqnum) {
+            break;
+        }
+
+        rawsend(msg);
+    }
+    setTimeout(RECV_TIMEOUT);
 }
 
 //  Description:
@@ -215,9 +227,7 @@ void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
         if (lowrecv(&response)){
             if (response.seqnum == msg.seqnum) {
                 break;
-            } else {
-                cout << "wat?" << endl;
-            }
+            } 
         }
     } while (true);
 
@@ -314,7 +324,6 @@ int rcs_t::recv(char *data, size_t maxLength) {
         }
     } while (buffer_.empty());
 
-    cout << "--- DONE RECV ON " << ucpSocket_ << "   " << maxLength <<  endl;
     return buffer_.read(data, maxLength);
 }
 
@@ -323,7 +332,6 @@ void rcs_t::finalizeRecv(const msg_t &ack) {
     msg_t response;
     while (rawrecv(&response)) {
         if (response.valid() && response.seqnum == 0 && response.length != 0) {
-            cout << "wat why dead" << endl;
             break;
         }
 
