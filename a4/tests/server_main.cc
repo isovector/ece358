@@ -3,6 +3,7 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+#include <fstream>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -36,14 +37,16 @@ int main() {
     rcsListen(listen);
     int client = rcsAccept(listen, NULL);
 
-    char buffer[1024];
-    strcpy(buffer, "hello from the server");
-    rcsSend(client, buffer, strlen(buffer));
+    const size_t LENGTH = 10000000;
+    char *buffer = new char[LENGTH];
+    ifstream file("send.mp3", ios::in | ios::binary);
 
-    buffer[rcsRecv(client, buffer, 1024)] = 0;
+    size_t length = file.readsome(buffer, LENGTH);
+    rcsSend(client, buffer, length);
 
-    cout << buffer << endl;
     rcsClose(client);
     rcsClose(listen);
+
+    delete buffer;
 }
 

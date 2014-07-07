@@ -11,7 +11,7 @@ using namespace std;
 static const size_t     RECV_TIMEOUT = 10;
 static const size_t PROTOCOL_TIMEOUT = 1000;
 
-#define INSPECT_PACKETS 1
+#define INSPECT_PACKETS 0
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
@@ -194,22 +194,6 @@ int rcs_t::send(const char *data, size_t length) {
     acksend(msg_t(sendSeqnum_, msg_t::EOS));
 
     return length;
-}
-
-void rcs_t::finalizeSend(const msg_t &msg) {
-    msg_t response;
-
-    rawsend(msg);
-
-    setTimeout(PROTOCOL_TIMEOUT);
-    while (rawrecv(&response)) {
-        if (response.valid() && response.seqnum == msg.seqnum) {
-            break;
-        }
-
-        rawsend(msg);
-    }
-    setTimeout(RECV_TIMEOUT);
 }
 
 //  Description:

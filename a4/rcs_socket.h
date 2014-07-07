@@ -28,7 +28,6 @@ public:
 private:
     void acksend(const msg_t &msg, msg_t *resp = NULL);
     int rawsend(const msg_t &msg) const;
-    void finalizeSend(const msg_t &msg);
 
     bool lowrecv(msg_t *out);
     int rawrecv(msg_t *out);

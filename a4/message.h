@@ -4,7 +4,8 @@
 #include <cstddef>
 #include <iostream>
 
-const size_t MAX_DATA_LENGTH = 32;
+// this is about the max size we can safely fit in a UDP packet
+const size_t MAX_DATA_LENGTH = 500;
 
 class msg_t {
 public: 

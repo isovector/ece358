@@ -3,6 +3,7 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+#include <fstream>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -37,14 +38,17 @@ int main() {
     sockaddr_in serverAddr = getAddr(SERVER);
     rcsConnect(sock, &serverAddr);
 
-    char buffer[1024];
-    buffer[rcsRecv(sock, buffer, 1024)] = 0;
+    const size_t LENGTH = 10000000;
+    char *buffer = new char[LENGTH];
+    int result = rcsRecv(sock, buffer, LENGTH);
 
-    cout << buffer << endl;
+    ofstream file("recv.mp3", ios::out | ios::binary);
+    file.write(buffer, result);
+    file.flush();
+    file.close();
 
-    strcpy(buffer, "hello joe");
-
-    rcsSend(sock, buffer, strlen(buffer));
     rcsClose(sock);
+
+    delete buffer;
 }
 
