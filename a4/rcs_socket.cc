@@ -292,15 +292,19 @@ int rcs_t::recv(char *data, size_t maxLength) {
             msg_t response;
             msg_t ack(recvSeqnum_ - 1, msg_t::ACK);
 
-            if (lowrecv(&response)) {
-                if (response.seqnum == recvSeqnum_) {
+            int bytes;
+            if ((bytes = rawrecv(&response))) {
+                bool isValid = static_cast<size_t>(bytes) == response.getTotalLength()
+                            && response.valid();
+
+                if (isValid && response.seqnum == recvSeqnum_) {
                     buffer_.queueMessage(response);
                     ack.seqnum = recvSeqnum_;
                     ++recvSeqnum_;
                 } 
 
                 rawsend(ack);
-                if (response.hasFlag(msg_t::EOS)) {
+                if (isValid && response.hasFlag(msg_t::EOS)) {
                     finalizeRecv(ack);
                     break;
                 }
