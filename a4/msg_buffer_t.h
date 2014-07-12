@@ -1,6 +1,6 @@
 #pragma once
 
-#include "message.h"
+#include "msg_t.h"
 #include <deque>
 
 class msg_buffer_t {

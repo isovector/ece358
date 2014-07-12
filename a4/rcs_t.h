@@ -1,9 +1,10 @@
 #pragma once
 
-#include "ucp_c.h"
-#include "message.h"
 #include <map>
-#include "msg_buffer.h"
+
+#include "ucp_c.h"
+#include "msg_t.h"
+#include "msg_buffer_t.h"
 
 class rcs_t {
     typedef std::map<int, rcs_t> sockets_t;

@@ -1,7 +1,7 @@
 #include "harness.h"
 #include <string>
 #include <iostream>
-#include "../msg_buffer.h"
+#include "../msg_buffer_t.h"
 using namespace std;
 
 UNIT_TEST(MsgBufferTest) {

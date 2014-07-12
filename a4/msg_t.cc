@@ -1,4 +1,4 @@
-#include "message.h"
+#include "msg_t.h"
 #include <assert.h>
 #include <string.h>
 using namespace std;
