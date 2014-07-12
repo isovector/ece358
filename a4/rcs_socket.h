@@ -10,7 +10,7 @@ class rcs_t {
     static sockets_t sSocketIdentifiers;
 
 public:
-    static rcs_t &getSocket(int id);
+    static rcs_t *getSocket(int id);
     static int makeSocket();
     static void destroySocket(int id);
 
@@ -43,7 +43,6 @@ private:
 
     uint16_t sendSeqnum_;
     uint16_t recvSeqnum_;
-    short numAccepted_;
 
     bool hasEndpoint_;
     sockaddr_in fromEndpoint_;

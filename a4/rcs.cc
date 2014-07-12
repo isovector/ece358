@@ -7,6 +7,7 @@
 extern int errno;
 
 #define SOCKET (rcs_t::getSocket(sockfd))
+#define CHECK_SOCKET if (!SOCKET) { return -1; }
 
 //  Description:
 //    Used to allocated an RCS socket.
@@ -24,7 +25,8 @@ int rcsSocket() {
 //  Output:
 //    int : error code
 int rcsBind(int sockfd, const struct sockaddr_in *addr) {
-    return SOCKET.bind(addr);
+    CHECK_SOCKET;
+    return SOCKET->bind(addr);
 }
 
 //  Description:
@@ -35,7 +37,8 @@ int rcsBind(int sockfd, const struct sockaddr_in *addr) {
 //  Output:
 //    int : error code
 int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
-    return SOCKET.getSockName(addr);
+    CHECK_SOCKET;
+    return SOCKET->getSockName(addr);
 }
 
 //  Description:
@@ -45,7 +48,8 @@ int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
 //  Output:
 //    int : error code
 int rcsListen(int sockfd) {
-    SOCKET.listen();
+    CHECK_SOCKET;
+    SOCKET->listen();
     return 0;
 }
 
@@ -59,7 +63,8 @@ int rcsListen(int sockfd) {
 //      int : socket descriptor of newly created socket for
 //             communicating with requester
 int rcsAccept(int sockfd, struct sockaddr_in *addr) {
-    return SOCKET.accept(addr);
+    CHECK_SOCKET;
+    return SOCKET->accept(addr);
 }
 
 //  Description:
@@ -70,7 +75,8 @@ int rcsAccept(int sockfd, struct sockaddr_in *addr) {
 //  Output:
 //    int : error code
 int rcsConnect(int sockfd, const struct sockaddr_in *addr) {
-    return SOCKET.connect(addr);
+    CHECK_SOCKET;
+    return SOCKET->connect(addr);
 }
 
 //  Description:
@@ -80,7 +86,8 @@ int rcsConnect(int sockfd, const struct sockaddr_in *addr) {
 //    void *data : buffer that received data is put in to
 //    int size   : expected amount of data (in bytes)
 int rcsRecv(int sockfd, void *data, int size) {
-    return SOCKET.recv(
+    CHECK_SOCKET;
+    return SOCKET->recv(
         static_cast<char*>(data),
         static_cast<size_t>(size)
     );
@@ -93,7 +100,8 @@ int rcsRecv(int sockfd, void *data, int size) {
 //    const void *data : buffer containing data to be sent
 //    int size         : amount of data to be sent (in bytes)
 int rcsSend(int sockfd, const void *data, int size) {
-    return SOCKET.send(
+    CHECK_SOCKET;
+    return SOCKET->send(
         static_cast<const char*>(data),
         static_cast<size_t>(size)
     );
@@ -106,6 +114,7 @@ int rcsSend(int sockfd, const void *data, int size) {
 //  Output:
 //    int : error code
 int rcsClose(int sockfd) {
+    CHECK_SOCKET;
     rcs_t::destroySocket(sockfd);
     return 0;
 }

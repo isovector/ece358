@@ -9,7 +9,10 @@
 using namespace std;
 
 static const size_t     RECV_TIMEOUT = 10;
-static const size_t PROTOCOL_TIMEOUT = 1000;
+static const size_t PROTOCOL_TIMEOUT = 500;
+
+static const short PORT_RANGE_LO = 16000;
+static const short PORT_RANGE_HI = 16600;
 
 #define INSPECT_PACKETS 0
 
@@ -36,15 +39,13 @@ void inspect_packet(int socket, bool send, const msg_t &msg) {
 //    int id : socket descriptor
 //  Output:
 //    rcs_t& : RCS socket with the requested id
-rcs_t &rcs_t::getSocket(int id) {
+rcs_t *rcs_t::getSocket(int id) {
     sockets_t::iterator it = sSocketIdentifiers.find(id);
     if (it == sSocketIdentifiers.end()) {
-        // make this a proper exception
-        throw "BAD SOCKET, SUCKA";
+        return NULL;
     }
 
-
-    return it->second;
+    return &it->second;
 }
 
 //  Description:
@@ -63,8 +64,7 @@ int rcs_t::makeSocket() {
 void rcs_t::destroySocket(int id) {
     sockets_t::iterator it = sSocketIdentifiers.find(id);
     if (it == sSocketIdentifiers.end()) {
-        // make this a proper exception
-        throw "BAD SOCKET, SUCKA";
+        return;
     }
 
     ucpClose(it->second.ucpSocket_);
@@ -76,7 +76,6 @@ rcs_t::rcs_t() :
     isListenerSocket_(false),
     sendSeqnum_(0),
     recvSeqnum_(0),
-    numAccepted_(0),
     hasEndpoint_(false)
 {
     setTimeout(RECV_TIMEOUT);
@@ -108,15 +107,17 @@ int rcs_t::accept(sockaddr_in *addr) {
 
     sockaddr_in me;
     getSockName(&me);
-    ++numAccepted_;
-    //TODO: come up with a better way of generating these
-    short newPort = ntohs(me.sin_port) + numAccepted_;
-    me.sin_port = htons(newPort);
-
 
     int childSockfd = makeSocket();
-    rcs_t &childSocket = getSocket(childSockfd);
-    childSocket.bind(&me);
+    rcs_t &childSocket = *getSocket(childSockfd);
+
+    short newPort;
+    for(newPort = PORT_RANGE_LO; newPort <= PORT_RANGE_HI; newPort++) {
+		me.sin_port = htons(newPort);
+		if (childSocket.bind(&me) >= 0) {
+            break;
+        }
+    }
 
     char buffer[32];
     setTimeout(0);
