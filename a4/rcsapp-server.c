@@ -124,8 +124,8 @@ void *serviceConnection(void *arg) {
             exit(0);
         }
 
-        if(mybind(s, &a) < 0) {
-            fprintf(stderr, "mybind() failed. Exiting...\n");
+        if(rcsBind(s, &a) < 0) {
+            fprintf(stderr, "rcsBind() failed. Exiting...\n");
             exit(0);
         }
 
