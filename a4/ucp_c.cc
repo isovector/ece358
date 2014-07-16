@@ -18,6 +18,7 @@
 #include <strings.h>
 
 extern int errno;
+extern int mybind(int, struct sockaddr_in *);
 
 unsigned int get_rand() {
     unsigned int ret = 0;
@@ -40,9 +41,8 @@ int ucpSocket()
     return(socket(AF_INET, SOCK_DGRAM, 0));
 }
 
-int ucpBind(int sockfd, const struct sockaddr_in *addr) {
-    return(bind(sockfd, (const struct sockaddr *)addr,
-		    (socklen_t)sizeof(struct sockaddr_in)));
+int ucpBind(int sockfd, struct sockaddr_in *addr) {
+    return(mybind(sockfd, addr));
 }
 
 int ucpGetSockName(int sockfd, struct sockaddr_in *addr)
@@ -62,7 +62,7 @@ int ucpSetSockRecvTimeout(int sockfd, int milliSecs)
 
 int ucpSendTo(int sockfd, const void *buf, int len, const struct sockaddr_in *to)
 {
-    const int pDoEvil = 50; /* Chance in 100 that we will do evil */
+    const int pDoEvil = 37; /* Chance in 100 that we will do evil */
 
     if(len <= 0) {
 	errno = EINVAL; /* Invalid arg */
