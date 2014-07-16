@@ -5,7 +5,7 @@
 #include <sys/select.h>
 
 int rcsSocket();
-int rcsBind(int sockfd, const struct sockaddr_in *addr);
+int rcsBind(int sockfd, struct sockaddr_in *addr);
 int rcsGetSockName(int sockfd, struct sockaddr_in *addr);
 int rcsListen(int sockfd);
 int rcsAccept(int sockfd, struct sockaddr_in *addr);
