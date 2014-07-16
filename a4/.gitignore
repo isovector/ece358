@@ -2,7 +2,6 @@
 *.d
 test
 a.out
-client
-server
+rcsapp-client
+rcsapp-server
 recv.mp3
-librcs.a

@@ -24,7 +24,7 @@ int rcsSocket() {
 //    const struct sockaddr_in *addr : address structure to bind socket to
 //  Output:
 //    int : error code
-int rcsBind(int sockfd, const struct sockaddr_in *addr) {
+int rcsBind(int sockfd, struct sockaddr_in *addr) {
     CHECK_SOCKET;
     return SOCKET->bind(addr);
 }

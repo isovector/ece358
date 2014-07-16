@@ -17,7 +17,7 @@ public:
 
     rcs_t();
 
-    int bind(const sockaddr_in *addr);
+    int bind(sockaddr_in *addr);
     void listen();
     int accept(sockaddr_in *addr);
     int connect(const sockaddr_in *addr);

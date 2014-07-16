@@ -88,7 +88,7 @@ rcs_t::rcs_t() :
 //                              should be bound to.
 //  Output:
 //    int : error code
-int rcs_t::bind(const sockaddr_in *addr) {
+int rcs_t::bind(sockaddr_in *addr) {
     return ucpBind(ucpSocket_, addr);
 }
 
