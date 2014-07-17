@@ -82,7 +82,8 @@ rcs_t::rcs_t() :
     isListenerSocket_(false),
     sendSeqnum_(0),
     recvSeqnum_(0),
-    hasEndpoint_(false)
+    hasEndpoint_(false),
+    isClosing_(false)
 {
     setTimeout(RECV_TIMEOUT);
 }
@@ -183,7 +184,7 @@ int rcs_t::send(const char *data, size_t length)
 
     for (
         size_t processedSize = 0;
-        processedSize < length;
+        processedSize < length && !isClosing_;
         processedSize += MAX_DATA_LENGTH
     ) {
         msg_t msg(
@@ -196,7 +197,9 @@ int rcs_t::send(const char *data, size_t length)
         ++sendSeqnum_;
     }
 
-    acksend(msg_t(sendSeqnum_, msg_t::EOS));
+    if (!isClosing_) {
+        acksend(msg_t(sendSeqnum_, msg_t::EOS));
+    }
 
     return length;
 }
@@ -220,7 +223,7 @@ void rcs_t::acksend(const msg_t &msg, msg_t *resp)
                 break;
             }
         }
-    } while (true);
+    } while (!isClosing_);
 
     if (resp) {
         memcpy(resp, &response, sizeof(msg_t));
@@ -285,6 +288,12 @@ int rcs_t::rawrecv(msg_t *out)
     inspect_packet(ucpSocket_, false, *out);
 #endif
 
+    if (out->valid() && static_cast<size_t>(result) == out->getTotalLength()) {
+        if (out->hasFlag(msg_t::FIN)) {
+            close();
+        }
+    }
+
     return result;
 }
 
@@ -297,12 +306,10 @@ int rcs_t::rawrecv(msg_t *out)
 //    int : number of bytes read
 int rcs_t::recv(char *data, size_t maxLength)
 {
-    bool isClosing = false;
-
     do {
         recvSeqnum_ = 0;
 
-        while (true) {
+        while (!isClosing_) {
             msg_t response;
             msg_t ack(recvSeqnum_ - 1, msg_t::ACK);
 
@@ -311,8 +318,6 @@ int rcs_t::recv(char *data, size_t maxLength)
             if ((bytes = rawrecv(&response))) {
                 bool isValid = static_cast<size_t>(bytes) == response.getTotalLength()
                                && response.valid();
-                isClosing = isClosing ||
-                            (isValid && response.hasFlag(msg_t::FIN));
 
                 if (isValid && response.seqnum == recvSeqnum_) {
                     buffer_.queueMessage(response);
@@ -320,25 +325,19 @@ int rcs_t::recv(char *data, size_t maxLength)
                     ++recvSeqnum_;
                 }
 
-                if (!isClosing) {
+                if (!isClosing_) {
                     rawsend(ack);
                 }
 
-                if (isValid &&
-                    (response.hasFlag(msg_t::EOS) || isClosing)) {
-                    if (isClosing) {
-                        close();
-                    } else {
-                        finalizeRecv(ack);
-                    }
-
+                if (isValid && response.hasFlag(msg_t::EOS)) {
+                    finalizeRecv(ack);
                     break;
                 }
             }
         }
-    } while (buffer_.empty() && !isClosing);
+    } while (buffer_.empty() && !isClosing_);
 
-    if (isClosing && buffer_.empty()) {
+    if (isClosing_ && buffer_.empty()) {
         return 0;
     }
 
@@ -368,6 +367,7 @@ void rcs_t::setTimeout(size_t newTimeout) const
 
 void rcs_t::close()
 {
+    isClosing_ = true;
     // try REALLY hard to close
     for (size_t i = 0; i < 2048; ++i) {
         rawsend(msg_t(666, msg_t::FIN));

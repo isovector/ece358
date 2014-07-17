@@ -49,5 +49,7 @@ private:
 
     bool hasEndpoint_;
     sockaddr_in fromEndpoint_;
+
+    bool isClosing_;
 };
 
