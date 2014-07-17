@@ -14,7 +14,7 @@ static const size_t PROTOCOL_TIMEOUT = 500;
 static const short PORT_RANGE_LO = 16000;
 static const short PORT_RANGE_HI = 16600;
 
-#define INSPECT_PACKETS 1
+#define INSPECT_PACKETS 0
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
@@ -67,7 +67,7 @@ void rcs_t::destroySocket(int id) {
         return;
     }
 
-    ucpClose(it->second.ucpSocket_);
+    it->second.close();
     sSocketIdentifiers.erase(it);
 }
 
@@ -115,6 +115,8 @@ int rcs_t::accept(sockaddr_in *addr) {
 
     char buffer[32];
     setTimeout(0);
+
+    hasEndpoint_ = false;
     recv(buffer, 32);
 
     childSocket.setEndpoint(&fromEndpoint_);
@@ -276,6 +278,7 @@ int rcs_t::rawrecv(msg_t *out) {
 //  Output:
 //    int : number of bytes read
 int rcs_t::recv(char *data, size_t maxLength) {
+    bool isClosing = false;
     do {
         recvSeqnum_ = 0;
         while (true) {
@@ -286,6 +289,8 @@ int rcs_t::recv(char *data, size_t maxLength) {
             if ((bytes = rawrecv(&response))) {
                 bool isValid = static_cast<size_t>(bytes) == response.getTotalLength()
                             && response.valid();
+                isClosing = isClosing || 
+                    (isValid && response.hasFlag(msg_t::FIN));
 
                 if (isValid && response.seqnum == recvSeqnum_) {
                     buffer_.queueMessage(response);
@@ -293,14 +298,26 @@ int rcs_t::recv(char *data, size_t maxLength) {
                     ++recvSeqnum_;
                 } 
 
-                rawsend(ack);
-                if (isValid && response.hasFlag(msg_t::EOS)) {
-                    finalizeRecv(ack);
+                if (!isClosing) {
+                    rawsend(ack);
+                }
+                if (isValid && 
+                    (response.hasFlag(msg_t::EOS) || isClosing)) {
+                    if (isClosing) {
+                        close();
+                    } else {
+                        finalizeRecv(ack);
+                    }
+
                     break;
                 }
             }
         }
-    } while (buffer_.empty());
+    } while (buffer_.empty() && !isClosing);
+
+    if (isClosing && buffer_.empty()) {
+        return 0;
+    }
 
     return buffer_.read(data, maxLength);
 }
@@ -320,5 +337,14 @@ void rcs_t::finalizeRecv(const msg_t &ack) {
 
 void rcs_t::setTimeout(size_t newTimeout) const {
     ucpSetSockRecvTimeout(ucpSocket_, static_cast<int>(newTimeout));
+}
+
+void rcs_t::close() {
+    // try REALLY hard to close
+    for (size_t i = 0; i < 2048; ++i) {
+        rawsend(msg_t(666, msg_t::FIN));
+    }
+
+    ucpClose(ucpSocket_);
 }
 

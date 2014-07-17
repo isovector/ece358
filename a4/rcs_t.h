@@ -36,6 +36,7 @@ private:
     void finalizeRecv(const msg_t &msg);
     void setEndpoint(const sockaddr_in *addr);
     void setTimeout(size_t newTimeout) const;
+    void close();
 
     int ucpSocket_;
     bool isListenerSocket_;
