@@ -7,8 +7,9 @@
 // this is about the max size we can safely fit in a UDP packet
 const size_t MAX_DATA_LENGTH = 500;
 
-class msg_t {
-public: 
+class msg_t
+{
+public:
     enum flags_t {
         NONE     = 0,
         ACK      = 1 << 0, // ack

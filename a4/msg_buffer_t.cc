@@ -16,8 +16,9 @@ msg_buffer_t::msg_buffer_t() :
 //    of total bytes in the buffer
 //  Input:
 //     const msg_t &msg : message to be queued
-void msg_buffer_t::queueMessage(const msg_t &msg) {
-    buffer_.push_back(const_cast<msg_t&>(msg));
+void msg_buffer_t::queueMessage(const msg_t &msg)
+{
+    buffer_.push_back(const_cast<msg_t &>(msg));
     totalSize_ += msg.length;
 }
 
@@ -25,7 +26,8 @@ void msg_buffer_t::queueMessage(const msg_t &msg) {
 //    Checks if the buffer is empty
 //  Output:
 //    bool : is the buffer empty?
-bool msg_buffer_t::empty() const {
+bool msg_buffer_t::empty() const
+{
     return totalSize_ == 0;
 }
 
@@ -34,14 +36,17 @@ bool msg_buffer_t::empty() const {
 //  Input:
 //    char *dest    : buffer to be filled with data
 //    size_t length : number of bytes to read from buffer.
-size_t msg_buffer_t::read(char *dest, size_t length) {
+size_t msg_buffer_t::read(char *dest, size_t length)
+{
     assert(!empty());
     size_t written = 0;
 
     while (length > 0 && !buffer_.empty()) {
         msg_t front = buffer_.front();
+
         if (front.hasFlag(msg_t::EOS)) {
             buffer_.pop_front();
+
             if (written != 0) {
                 break;
             } else {
@@ -62,6 +67,7 @@ size_t msg_buffer_t::read(char *dest, size_t length) {
         written += toCopy;
 
         offset_ += toCopy;
+
         if (offset_ >= front.length) {
             offset_ = 0;
             buffer_.pop_front();

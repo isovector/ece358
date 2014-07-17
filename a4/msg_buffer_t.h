@@ -3,7 +3,8 @@
 #include "msg_t.h"
 #include <deque>
 
-class msg_buffer_t {
+class msg_buffer_t
+{
 public:
     msg_buffer_t();
 

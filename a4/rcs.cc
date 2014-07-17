@@ -13,7 +13,8 @@ extern int errno;
 //    Used to allocated an RCS socket.
 //  Returns:
 //      int : socket descriptor (positive integer) on success
-int rcsSocket() {
+int rcsSocket()
+{
     return rcs_t::makeSocket();
 }
 
@@ -24,7 +25,8 @@ int rcsSocket() {
 //    const struct sockaddr_in *addr : address structure to bind socket to
 //  Output:
 //    int : error code
-int rcsBind(int sockfd, struct sockaddr_in *addr) {
+int rcsBind(int sockfd, struct sockaddr_in *addr)
+{
     CHECK_SOCKET;
     return SOCKET->bind(addr);
 }
@@ -36,7 +38,8 @@ int rcsBind(int sockfd, struct sockaddr_in *addr) {
 //    struct sockaddr_in *addr : address structure to be filled with socket address info
 //  Output:
 //    int : error code
-int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
+int rcsGetSockName(int sockfd, struct sockaddr_in *addr)
+{
     CHECK_SOCKET;
     return SOCKET->getSockName(addr);
 }
@@ -47,7 +50,8 @@ int rcsGetSockName(int sockfd, struct sockaddr_in *addr) {
 //    int sockfd : socket descriptor
 //  Output:
 //    int : error code
-int rcsListen(int sockfd) {
+int rcsListen(int sockfd)
+{
     CHECK_SOCKET;
     SOCKET->listen();
     return 0;
@@ -62,7 +66,8 @@ int rcsListen(int sockfd) {
 //  Output:
 //      int : socket descriptor of newly created socket for
 //             communicating with requester
-int rcsAccept(int sockfd, struct sockaddr_in *addr) {
+int rcsAccept(int sockfd, struct sockaddr_in *addr)
+{
     CHECK_SOCKET;
     return SOCKET->accept(addr);
 }
@@ -74,7 +79,8 @@ int rcsAccept(int sockfd, struct sockaddr_in *addr) {
 //    const struct sockaddr_in *addr: address of the server
 //  Output:
 //    int : error code
-int rcsConnect(int sockfd, const struct sockaddr_in *addr) {
+int rcsConnect(int sockfd, const struct sockaddr_in *addr)
+{
     CHECK_SOCKET;
     return SOCKET->connect(addr);
 }
@@ -85,12 +91,13 @@ int rcsConnect(int sockfd, const struct sockaddr_in *addr) {
 //    int sockfd : socket descriptor
 //    void *data : buffer that received data is put in to
 //    int size   : expected amount of data (in bytes)
-int rcsRecv(int sockfd, void *data, int size) {
+int rcsRecv(int sockfd, void *data, int size)
+{
     CHECK_SOCKET;
     return SOCKET->recv(
-        static_cast<char*>(data),
-        static_cast<size_t>(size)
-    );
+               static_cast<char *>(data),
+               static_cast<size_t>(size)
+           );
 }
 
 //  Description:
@@ -99,12 +106,13 @@ int rcsRecv(int sockfd, void *data, int size) {
 //    int sockfd : socket descriptor
 //    const void *data : buffer containing data to be sent
 //    int size         : amount of data to be sent (in bytes)
-int rcsSend(int sockfd, const void *data, int size) {
+int rcsSend(int sockfd, const void *data, int size)
+{
     CHECK_SOCKET;
     return SOCKET->send(
-        static_cast<const char*>(data),
-        static_cast<size_t>(size)
-    );
+               static_cast<const char *>(data),
+               static_cast<size_t>(size)
+           );
 }
 
 //  Description:
@@ -113,7 +121,8 @@ int rcsSend(int sockfd, const void *data, int size) {
 //    int sockfd : socket descriptor
 //  Output:
 //    int : error code
-int rcsClose(int sockfd) {
+int rcsClose(int sockfd)
+{
     CHECK_SOCKET;
     rcs_t::destroySocket(sockfd);
     return 0;

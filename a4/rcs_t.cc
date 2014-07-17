@@ -19,7 +19,8 @@ static const short PORT_RANGE_HI = 16600;
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
 
-void inspect_packet(int socket, bool send, const msg_t &msg) {
+void inspect_packet(int socket, bool send, const msg_t &msg)
+{
     if (send) {
         cout << ">>";
     } else {
@@ -28,7 +29,7 @@ void inspect_packet(int socket, bool send, const msg_t &msg) {
 
     cout << " " << socket << ":" << msg << "\n";
 
-    if (!send) { 
+    if (!send) {
         cout << "\n";
     }
 }
@@ -39,8 +40,10 @@ void inspect_packet(int socket, bool send, const msg_t &msg) {
 //    int id : socket descriptor
 //  Output:
 //    rcs_t& : RCS socket with the requested id
-rcs_t *rcs_t::getSocket(int id) {
+rcs_t *rcs_t::getSocket(int id)
+{
     sockets_t::iterator it = sSocketIdentifiers.find(id);
+
     if (it == sSocketIdentifiers.end()) {
         return NULL;
     }
@@ -52,7 +55,8 @@ rcs_t *rcs_t::getSocket(int id) {
 //    Static method for creating RCS sockets
 //  Output:
 //    int : socket descriptor for the newly created socket
-int rcs_t::makeSocket() {
+int rcs_t::makeSocket()
+{
     static size_t sNextId = 0;
 
     sSocketIdentifiers[sNextId];
@@ -61,8 +65,10 @@ int rcs_t::makeSocket() {
 
 //  Description:
 //    Static method for closing RCS sockets
-void rcs_t::destroySocket(int id) {
+void rcs_t::destroySocket(int id)
+{
     sockets_t::iterator it = sSocketIdentifiers.find(id);
+
     if (it == sSocketIdentifiers.end()) {
         return;
     }
@@ -88,19 +94,23 @@ rcs_t::rcs_t() :
 //                              should be bound to.
 //  Output:
 //    int : error code
-int rcs_t::bind(sockaddr_in *addr) {
+int rcs_t::bind(sockaddr_in *addr)
+{
     return ucpBind(ucpSocket_, addr);
 }
 
-int rcs_t::getSockName(sockaddr_in *addr) const {
+int rcs_t::getSockName(sockaddr_in *addr) const
+{
     return ucpGetSockName(ucpSocket_, addr);
 }
 
-void rcs_t::listen() {
+void rcs_t::listen()
+{
     isListenerSocket_ = true;
 }
 
-int rcs_t::accept(sockaddr_in *addr) {
+int rcs_t::accept(sockaddr_in *addr)
+{
     if (!isListenerSocket_) {
         return -1;
     }
@@ -121,7 +131,7 @@ int rcs_t::accept(sockaddr_in *addr) {
 
     childSocket.setEndpoint(&fromEndpoint_);
     send(
-        reinterpret_cast<char*>(&me.sin_port),
+        reinterpret_cast<char *>(&me.sin_port),
         sizeof(short)
     );
 
@@ -138,7 +148,8 @@ int rcs_t::accept(sockaddr_in *addr) {
 //    const sockaddr_in *addr:  address of the server to connect to
 //  Output:
 //    int : error code
-int rcs_t::connect(const sockaddr_in *addr) {
+int rcs_t::connect(const sockaddr_in *addr)
+{
     setEndpoint(addr);
 
     char connection[16] = "rcs connect";
@@ -147,13 +158,14 @@ int rcs_t::connect(const sockaddr_in *addr) {
     recv(connection, 16);
 
     // update our port to what the host told us to use
-    endPoint_.sin_port = *reinterpret_cast<short*>(connection);
+    endPoint_.sin_port = *reinterpret_cast<short *>(connection);
     setEndpoint(&endPoint_);
 
     return 0;
 }
 
-void rcs_t::setEndpoint(const sockaddr_in *addr) {
+void rcs_t::setEndpoint(const sockaddr_in *addr)
+{
     memcpy(&endPoint_, addr, sizeof(sockaddr_in));
     hasEndpoint_ = true;
 }
@@ -165,7 +177,8 @@ void rcs_t::setEndpoint(const sockaddr_in *addr) {
 //    size_t length    : length of data to be sent (in bytes)
 //  Output:
 //    int : the number of bytes sent
-int rcs_t::send(const char *data, size_t length) {
+int rcs_t::send(const char *data, size_t length)
+{
     sendSeqnum_ = 0;
 
     for (
@@ -193,17 +206,19 @@ int rcs_t::send(const char *data, size_t length) {
 //  Input:
 //    const msg_t &msg : the message to be sent
 //    msg_t *resp : filled with the ACK; NULL by default
-void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
+void rcs_t::acksend(const msg_t &msg, msg_t *resp)
+{
     msg_t response;
 
     do {
         rawsend(msg);
 
         msg_t response;
-        if (lowrecv(&response)){
+
+        if (lowrecv(&response)) {
             if (response.seqnum == msg.seqnum) {
                 break;
-            } 
+            }
         }
     } while (true);
 
@@ -218,7 +233,8 @@ void rcs_t::acksend(const msg_t &msg, msg_t *resp) {
 //    msg_t &msg : message to be sent
 //  Output:
 //    int : error code
-int rcs_t::rawsend(const msg_t &msg) const {
+int rcs_t::rawsend(const msg_t &msg) const
+{
 #if INSPECT_PACKETS
     inspect_packet(ucpSocket_, true, msg);
 #endif
@@ -226,29 +242,31 @@ int rcs_t::rawsend(const msg_t &msg) const {
     assert(!(msg.length == 0 && msg.flags == msg_t::NONE));
 
     return ucpSendTo(
-        ucpSocket_,
-        msg.serialize(),
-        static_cast<int>(msg.getTotalLength()),
-        &endPoint_
-    );
+               ucpSocket_,
+               msg.serialize(),
+               static_cast<int>(msg.getTotalLength()),
+               &endPoint_
+           );
 }
 
 // recv and ensure validity
-bool rcs_t::lowrecv(msg_t *out) {
+bool rcs_t::lowrecv(msg_t *out)
+{
     int result = rawrecv(out);
     return out->valid() && static_cast<size_t>(result) == out->getTotalLength();
 }
 
 // recv something
-int rcs_t::rawrecv(msg_t *out) {
+int rcs_t::rawrecv(msg_t *out)
+{
     char data[sizeof(msg_t)] = {0};
 
     int result = ucpRecvFrom(
-        ucpSocket_,
-        static_cast<void*>(data),
-        sizeof(msg_t),
-        &fromEndpoint_
-    );
+                     ucpSocket_,
+                     static_cast<void *>(data),
+                     sizeof(msg_t),
+                     &fromEndpoint_
+                 );
 
     if (!hasEndpoint_) {
         setEndpoint(&fromEndpoint_);
@@ -277,31 +295,36 @@ int rcs_t::rawrecv(msg_t *out) {
 //    size_t maxLength : maximum amount of data that the buffer can hold
 //  Output:
 //    int : number of bytes read
-int rcs_t::recv(char *data, size_t maxLength) {
+int rcs_t::recv(char *data, size_t maxLength)
+{
     bool isClosing = false;
+
     do {
         recvSeqnum_ = 0;
+
         while (true) {
             msg_t response;
             msg_t ack(recvSeqnum_ - 1, msg_t::ACK);
 
             int bytes;
+
             if ((bytes = rawrecv(&response))) {
                 bool isValid = static_cast<size_t>(bytes) == response.getTotalLength()
-                            && response.valid();
-                isClosing = isClosing || 
-                    (isValid && response.hasFlag(msg_t::FIN));
+                               && response.valid();
+                isClosing = isClosing ||
+                            (isValid && response.hasFlag(msg_t::FIN));
 
                 if (isValid && response.seqnum == recvSeqnum_) {
                     buffer_.queueMessage(response);
                     ack.seqnum = recvSeqnum_;
                     ++recvSeqnum_;
-                } 
+                }
 
                 if (!isClosing) {
                     rawsend(ack);
                 }
-                if (isValid && 
+
+                if (isValid &&
                     (response.hasFlag(msg_t::EOS) || isClosing)) {
                     if (isClosing) {
                         close();
@@ -322,9 +345,11 @@ int rcs_t::recv(char *data, size_t maxLength) {
     return buffer_.read(data, maxLength);
 }
 
-void rcs_t::finalizeRecv(const msg_t &ack) {
+void rcs_t::finalizeRecv(const msg_t &ack)
+{
     setTimeout(PROTOCOL_TIMEOUT);
     msg_t response;
+
     while (rawrecv(&response)) {
         if (response.valid() && response.seqnum == 0 && response.length != 0) {
             break;
@@ -332,14 +357,17 @@ void rcs_t::finalizeRecv(const msg_t &ack) {
 
         rawsend(ack);
     }
+
     setTimeout(RECV_TIMEOUT);
 }
 
-void rcs_t::setTimeout(size_t newTimeout) const {
+void rcs_t::setTimeout(size_t newTimeout) const
+{
     ucpSetSockRecvTimeout(ucpSocket_, static_cast<int>(newTimeout));
 }
 
-void rcs_t::close() {
+void rcs_t::close()
+{
     // try REALLY hard to close
     for (size_t i = 0; i < 2048; ++i) {
         rawsend(msg_t(666, msg_t::FIN));

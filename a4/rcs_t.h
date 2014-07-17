@@ -6,7 +6,8 @@
 #include "msg_t.h"
 #include "msg_buffer_t.h"
 
-class rcs_t {
+class rcs_t
+{
     typedef std::map<int, rcs_t> sockets_t;
     static sockets_t sSocketIdentifiers;
 
@@ -32,7 +33,7 @@ private:
 
     bool lowrecv(msg_t *out);
     int rawrecv(msg_t *out);
-        
+
     void finalizeRecv(const msg_t &msg);
     void setEndpoint(const sockaddr_in *addr);
     void setTimeout(size_t newTimeout) const;
