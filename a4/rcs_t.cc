@@ -252,14 +252,26 @@ int rcs_t::rawsend(const msg_t &msg) const
            );
 }
 
-// recv and ensure validity
+//  Description:
+//    Receive a message and ensure it is valid
+//  Input:
+//    msg_t *out : output parameter: message received
+//  Output:
+//    bool : was the received message valid?
 bool rcs_t::lowrecv(msg_t *out)
 {
     int result = rawrecv(out);
     return out->valid() && static_cast<size_t>(result) == out->getTotalLength();
 }
 
-// recv something
+//  Description:
+//    Wrapper around ucpRecvFrom -- potentially setting new routing
+//    information and closing the socket if a FIN message is ever
+//    received.
+//  Input:
+//    msg_t *out : output parameter: message received
+//  Output:
+//    int : number of bytes received
 int rcs_t::rawrecv(msg_t *out)
 {
     char data[sizeof(msg_t)] = {0};
@@ -298,7 +310,9 @@ int rcs_t::rawrecv(msg_t *out)
 }
 
 //  Description
-//    Implementation of rcsRecv
+//    Implementation of rcsRecv. Read up to maxLength bytes, or one send() call
+//    -- whichever is smaller. If maxLength is smaller, subsequent calls to 
+//    recv() will get the remainder of the message.
 //  Input:
 //    char *data       : buffer to be filled with received data
 //    size_t maxLength : maximum amount of data that the buffer can hold
