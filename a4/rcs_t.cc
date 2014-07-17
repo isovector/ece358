@@ -165,6 +165,10 @@ int rcs_t::connect(const sockaddr_in *addr)
     return 0;
 }
 
+//  Description:
+//    Sets the endpoint of a socket
+//  Input:
+//    const sockaddr_in *addr:  address of the endpoint
 void rcs_t::setEndpoint(const sockaddr_in *addr)
 {
     memcpy(&endPoint_, addr, sizeof(sockaddr_in));
@@ -344,6 +348,11 @@ int rcs_t::recv(char *data, size_t maxLength)
     return buffer_.read(data, maxLength);
 }
 
+//  Description:
+//    Ensures proper termination of a send/recv transaction between
+//      two parties
+//  Input:
+//    const msg_t &ack: the ack the sender is expecting
 void rcs_t::finalizeRecv(const msg_t &ack)
 {
     setTimeout(PROTOCOL_TIMEOUT);
@@ -360,11 +369,18 @@ void rcs_t::finalizeRecv(const msg_t &ack)
     setTimeout(RECV_TIMEOUT);
 }
 
+//  Description:
+//    Sets timeout on UCP socket
+//  Input:
+//    size_t newTimeout: the timeout value in milliseconds. 0 represents infinity
 void rcs_t::setTimeout(size_t newTimeout) const
 {
     ucpSetSockRecvTimeout(ucpSocket_, static_cast<int>(newTimeout));
 }
 
+//  Description:
+//    Closes a connection using the most sophisticated
+//      techniques available.
 void rcs_t::close()
 {
     isClosing_ = true;
