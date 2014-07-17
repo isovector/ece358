@@ -145,12 +145,7 @@ int rcs_t::connect(const sockaddr_in *addr) {
     recv(connection, 16);
 
     // update our port to what the host told us to use
-    endPoint_.sin_port = htons(
-        *static_cast<short*>(
-            static_cast<void*>(connection)
-        )
-    );
-
+    endPoint_.sin_port = *reinterpret_cast<short*>(connection);
     setEndpoint(&endPoint_);
 
     return 0;

@@ -1,7 +1,9 @@
 *.o
 *.d
+1*
 test
 a.out
 rcsapp-client
 rcsapp-server
 recv.mp3
+

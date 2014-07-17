@@ -51,7 +51,6 @@ void *serviceConnection(void *arg) {
     unsigned char buf[256];
     ssize_t recvlen = 0;
     while((recvlen = rcsRecv(s, buf, 256)) >= 0) {
-        printf("suck my dick\n");
 #ifdef _DEBUG_
         if(recvlen > 0) {
             printf("%lu received %d bytes.\n",
@@ -80,8 +79,6 @@ void *serviceConnection(void *arg) {
             }
         }
 
-        printf("dead\n");
-        
 #ifdef _DEBUG_
         printf("%lu exiting, spot 2...\n", pthread_self());
 #endif
