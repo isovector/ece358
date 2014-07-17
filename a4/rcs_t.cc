@@ -14,7 +14,7 @@ static const size_t PROTOCOL_TIMEOUT = 500;
 static const short PORT_RANGE_LO = 16000;
 static const short PORT_RANGE_HI = 16600;
 
-#define INSPECT_PACKETS 0
+#define INSPECT_PACKETS 1
 
 rcs_t::sockets_t rcs_t::sSocketIdentifiers;
 
@@ -107,17 +107,11 @@ int rcs_t::accept(sockaddr_in *addr) {
 
     sockaddr_in me;
     getSockName(&me);
+    me.sin_port = 0;
 
     int childSockfd = makeSocket();
     rcs_t &childSocket = *getSocket(childSockfd);
-
-    short newPort;
-    for(newPort = PORT_RANGE_LO; newPort <= PORT_RANGE_HI; newPort++) {
-		me.sin_port = htons(newPort);
-		if (childSocket.bind(&me) >= 0) {
-            break;
-        }
-    }
+    childSocket.bind(&me);
 
     char buffer[32];
     setTimeout(0);
@@ -125,7 +119,7 @@ int rcs_t::accept(sockaddr_in *addr) {
 
     childSocket.setEndpoint(&fromEndpoint_);
     send(
-        static_cast<char*>(static_cast<void*>(&newPort)),
+        reinterpret_cast<char*>(&me.sin_port),
         sizeof(short)
     );
 

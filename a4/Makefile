@@ -6,7 +6,7 @@ CXXFLAGS := ${TCPFLAG} -g -Wall -MMD -pthread
 EXECS = rcsapp-server rcsapp-client
 
 # Object files
-COMMON_OBJECTS = $(addsuffix .o, rcs rcs_t msg_t msg_buffer_t mybind_c ucp_c)
+COMMON_OBJECTS = $(addsuffix .o, rcs rcs_t msg_t msg_buffer_t mybind ucp)
 UNIT_TESTS:=harness.o $(shell find tests -iname '*.cc' | sed 's/\.cc$$/.o/')
 TEST_OBJECTS = ${UNIT_TESTS} ${COMMON_OBJECTS}
 
