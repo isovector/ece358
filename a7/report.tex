@@ -18,7 +18,8 @@
 
 \title{ECE358 Assignment 7}
 \author{Ariel Weingarten --- 20366892\\
-        Alexander Maguire --- }
+        Alexander Maguire --- 20396195\\\\
+        In collaboration with Lucas Wojciechowski and Mark Roukema.}
 \date{\today}
 
 \begin{document}
@@ -30,20 +31,25 @@
 % (b) In what way would using path vector routing address the above behaviour demonstrated by G? (In path vector routing, not only distance vectors are sent between routers, but also the paths that correspond to those distances.)
 \section{Question 1}
 \subsection{Part One}
+
+\includegraphics[width=1\textwidth]{a7q1.png}
+The way to read this answer is that events labeled with letters occur at the same time as the events in their list.
+That is, every new number in the outer list represents a tick of the clock and the lettered items under them are what happens
+at said clock tick.
 \begin{enumerate}
 	\item \begin{enumerate}
-		\item B's connection to E goes down\\
+		\item The link between B and E goes down.\\
 	\end{enumerate}
 
 	\item \begin{enumerate}
-		\item B responds by telling its neighbors that its (B's) new distance to E is infinity\\
-		\item A wants to send a message to E and it sends that message to B. (because it is in the process of receiving the update from B)\\
-		\item C's connection to E goes down\\
+		\item B reacts to the change by telling its neighbors that its (B's) new distance to E is infinity\\
+		\item A wants to send a message to E and it sends that message to B. (because it is in the process of receiving the update from B).\\
+		\item The link between C and E goes down.\\
 	\end{enumerate}
 
 	\item \begin{enumerate}
 		\item B forwards A's message to C\\
-		\item C tells neighbours that its distance to E is infinity\\
+		\item C reacts to the change by telling its neighbors that its (C's) distance to E is infinity\\
 	\end{enumerate}
 
 	\item \begin{enumerate}
@@ -99,6 +105,20 @@ If the attack tries to modify the message in-flight, then the receiver will be a
 
 % (5 points) Consider the zero-knowledge proof for quadratic-residuosity from my notes, which, in turn, is from Goldwasser et al. [GMR89]. It appears that the server should always choose b = 1 because that is the only option that forces Alice to respond with something that has to do with y. Show that if Alice knows that the server will always choose b = 1, then she can successfully participate in the protocol for any n even when she does not know w.
 \section{Question 4}
+Let Alice and the Server be represented by $A$ and $S$ respectively. If $A$ picks $r^2=y$, then
+the case where $S$ picks $b=1$ is trivial. $A$ would need to provide an $s$ such that
+$s^2 \equiv y^2(\mod x)$
+
+There is a modular arithmetic property that states if $x^2 \equiv z^2(\mod a)$ then $x \equiv z(\mod a)$.
+Using this property, Alice can trivially find an $s$ because she is looking for $s \equiv y(\mod x)$ which is just
+$y+ kx$ where $k$ is any integer. Since $y$ is public knowledge, $A$ can use this technique to successfully
+participate in $n$ rounds of this protocol if $S$ always picks $b=1$.
+
+An interesting side effect of this strategy is what it does to the case where $b=0$.
+Normally in this case, the client would not need to know $w$, but now with $r^2=y$
+the client needs to find $s^2 \equiv (\mod x)$ which is exactly the quadratic residuosity problem.
+If the client knows $w$ then they can easily generate solutions via $w + kx$ where k is any integer, but
+the malicious attacker, Alice, would have a hard time providing such an answer because finding a $w$ is ``hard''.
 
 %(5 points) From Section 4, Example 3.4 of Abadi and Needham [AN95]: “We leave the construction of an attack as an exercise for the reader.” Construct an attack. (You can use their proposed resolution as a hint.)
 \section{Question 5}
